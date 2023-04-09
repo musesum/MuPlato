@@ -12,9 +12,6 @@ open class PlatoPipeline: MetPipeline {
     
     var platoNode: MetNode!    
     var cameraNode: MetNode!
-    var renderNode: MetNode!
-    var cubemapNode: MetNodeCubemap!
-
     var platonic: Platonic!
 
     var motion: Motion?
@@ -40,14 +37,16 @@ open class PlatoPipeline: MetPipeline {
         }
         if platoOps.hasCube {
             cubemapNode = MetNodeCubemap(self, platonic.platoOps.hasCamera)
-            let zero = Float.zero
-            let f = Float(0.75)
-            cubemapNode.addBuffer("frame",  zero)
-            cubemapNode.addBuffer("mirror", [zero,zero])
-            cubemapNode.addBuffer("repeat", [f,f])
-            cubemapNode.isOn = platoOps.showCube
+            if let cubemapNode {
+                let zero = Float.zero
+                let f = Float(0.75)
+                cubemapNode.addBuffer("frame",  zero)
+                cubemapNode.addBuffer("mirror", [zero,zero])
+                cubemapNode.addBuffer("repeat", [f,f])
+                cubemapNode.isOn = platoOps.showCube
 
-            nodes.append(cubemapNode)
+                nodes.append(cubemapNode)
+            }
         }
         if platoOps.showPlato {
             platoNode = MetNodePlato(self)

@@ -5,7 +5,7 @@ import Collections
 import Vision
 import UIKit
 
-class Platonic {
+open class Platonic {
 
     var counter: PlatoCounter
     var plaTrii: PlaTrii
@@ -21,12 +21,12 @@ class Platonic {
 
         //.showCube,
         .showPlato,
-        //.reflectCube,
+        .reflectCube,
         //.cameraBack,
         //.cameraFront,
         //.faceMask,
         .trackMotion,
-        .colorizeTri,
+        //.colorizeTri,
         .colorShade,
         .invertShade,
         .drawFill,

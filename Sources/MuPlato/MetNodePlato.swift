@@ -21,15 +21,11 @@ public class MetNodePlato: MetNode {
     var uniformBuf: MTLBuffer!
 
     let platonic: Platonic
-    let platoOps: PlatoOps
-    let platoPipe: PlatoPipeline
+    
+    public init(_ pipeline: MetPipeline,
+                _ filename: String = "pipe.plato") {
 
-    init(_ pipeline: PlatoPipeline,
-         _ filename: String = "pipe.plato") {
-
-        self.platoPipe = pipeline
-        self.platonic = pipeline.platonic
-        self.platoOps = pipeline.platonic.platoOps
+        self.platonic = Platonic(pipeline.device)
         super.init(pipeline, "plato", "pipe.plato", .render)
         self.filename = filename
 
@@ -49,11 +45,12 @@ public class MetNodePlato: MetNode {
         makeLibrary()
 
         let vertexName = "platoVertex"
-        let fragmentName = (platoOps.reflectCube
-                            ? (platoOps.hasCamera
+        var fragmentName = (platonic.platoOps.reflectCube
+                            ? (platonic.platoOps.hasCamera
                                ? "platoCubeIndex"
                                : "platoCubeColor")
                             : "platoColor")
+        fragmentName = "platoCubeIndex" //??? 
         
         let vd = MTLVertexDescriptor()
         var offset = 0
@@ -106,7 +103,7 @@ public class MetNodePlato: MetNode {
         let uniformLen = MemoryLayout<PlatoUniforms>.size
         let indexCount = indexBuf.length / MemoryLayout<UInt32>.stride
 
-        renderEnc.setTriangleFillMode(platoOps.drawFill ? .fill : .lines)
+        renderEnc.setTriangleFillMode(platonic.platoOps.drawFill ? .fill : .lines)
         renderEnc.setRenderPipelineState(renderState)
         renderEnc.setDepthStencilState(pipeline.depthStencil(write: true))
         
@@ -114,21 +111,23 @@ public class MetNodePlato: MetNode {
         renderEnc.setVertexBuffer(uniformBuf, offset: uniformLen, index: 1)
         renderEnc.setFragmentBuffer(uniformBuf, offset: uniformLen, index: 0)
         
-        if let cubeNode = platoPipe.cubemapNode {
-            if platoOps.reflectCube,
+        if let cubeNode = pipeline.cubemapNode {
+            if platonic.platoOps.reflectCube,
                let cubeTex    = cubeNode.cubeTex,
                let cubeSamplr = cubeNode.cubeSamplr {
                 
                 renderEnc.setFragmentTexture(cubeTex, index: 0)
                 renderEnc.setFragmentSamplerState(cubeSamplr, index: 0)
             }
-            if platoOps.hasCamera {
+            if platonic.platoOps.hasCamera {
                 guard let inTex    = cubeNode.inTex    else { return }
                 guard let inSamplr = cubeNode.inSamplr else { return }
                 
                 renderEnc.setFragmentTexture(inTex, index: 1)
                 renderEnc.setFragmentSamplerState(inSamplr, index: 1)
             }
+        } else if platonic.platoOps.reflectCube {
+            return //??? 
         }
         
         renderEnc.drawIndexedPrimitives(
