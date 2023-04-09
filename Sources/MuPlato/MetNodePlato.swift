@@ -51,9 +51,9 @@ public class MetNodePlato: MetNode {
         let vertexName = "platoVertex"
         let fragmentName = (platoOps.reflectCube
                             ? (platoOps.hasCamera
-                               ? "cubeIndexFragment"
-                               : "cubeColorFragment")
-                            : "colorFragment")
+                               ? "platoCubeIndex"
+                               : "platoCubeColor")
+                            : "platoColor")
         
         let vd = MTLVertexDescriptor()
         var offset = 0
@@ -114,29 +114,29 @@ public class MetNodePlato: MetNode {
         renderEnc.setVertexBuffer(uniformBuf, offset: uniformLen, index: 1)
         renderEnc.setFragmentBuffer(uniformBuf, offset: uniformLen, index: 0)
         
-        if let cubemapNode = platoPipe.cubemapNode {
+        if let cubeNode = platoPipe.cubemapNode {
             if platoOps.reflectCube,
-               let cubeTex    = cubemapNode.cubeTex,
-               let cubeSamplr = cubemapNode.cubeSamplr {
+               let cubeTex    = cubeNode.cubeTex,
+               let cubeSamplr = cubeNode.cubeSamplr {
                 
                 renderEnc.setFragmentTexture(cubeTex, index: 0)
                 renderEnc.setFragmentSamplerState(cubeSamplr, index: 0)
             }
             if platoOps.hasCamera {
-                guard let imageTex    = cubemapNode.inTex    else { return }
-                guard let imageSamplr = cubemapNode.inSamplr else { return }
+                guard let inTex    = cubeNode.inTex    else { return }
+                guard let inSamplr = cubeNode.inSamplr else { return }
                 
-                renderEnc.setFragmentTexture(imageTex, index: 1)
-                renderEnc.setFragmentSamplerState(imageSamplr, index: 1)
+                renderEnc.setFragmentTexture(inTex, index: 1)
+                renderEnc.setFragmentSamplerState(inSamplr, index: 1)
             }
         }
         
         renderEnc.drawIndexedPrimitives(
-            type: .triangle,
-            indexCount: indexCount,
-            indexType: .uint32,
-            indexBuffer: indexBuf,
-            indexBufferOffset: 0)
+            type              : .triangle,
+            indexCount        : indexCount,
+            indexType         : .uint32,
+            indexBuffer       : indexBuf,
+            indexBufferOffset : 0)
 
         platonic.nextCounter()
     }
@@ -144,7 +144,11 @@ public class MetNodePlato: MetNode {
     override public func setupInOutTextures(via: String) {
 
         updateUniforms()
-        inTex = inNode?.outTex
+        if let cubeNode = inNode as? MetNodeCubemap {
+            inTex = cubeNode.cubeTex //???
+        } else {
+            inTex = inNode?.outTex //???
+        }
     }
 }
 

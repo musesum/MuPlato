@@ -19,14 +19,14 @@ class Platonic {
 
     public var platoOps = PlatoOps([
 
-        .showCube,
+        //.showCube,
         .showPlato,
-        .reflectCube,
+        //.reflectCube,
         //.cameraBack,
-        .cameraFront,
+        //.cameraFront,
         //.faceMask,
         .trackMotion,
-        //.colorizeTri,
+        .colorizeTri,
         .colorShade,
         .invertShade,
         .drawFill,

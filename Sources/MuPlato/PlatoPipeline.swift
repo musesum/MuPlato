@@ -6,9 +6,9 @@ import Metal
 import MuMetal
 import simd
 
-class PlatoPipeline: MetPipeline {
+open class PlatoPipeline: MetPipeline {
 
-    static var shared = PlatoPipeline()
+    public static var shared = PlatoPipeline()
     
     var platoNode: MetNode!    
     var cameraNode: MetNode!
@@ -21,7 +21,7 @@ class PlatoPipeline: MetPipeline {
     var facePose: MetFacePose!
     var displayLink: MetDisplayLink!
 
-    override init() {
+    override public init() {
         super.init()
         motion = Motion.shared
         platonic = Platonic(device)
@@ -75,7 +75,7 @@ class PlatoPipeline: MetPipeline {
 
 extension PlatoPipeline: MetFacePoseDelegate {
 
-    func didUpdate(_ ciImage: CIImage) {
+    public func didUpdate(_ ciImage: CIImage) {
         
         cubemapNode?.updateCubemap(ciImage)
         didFire()
