@@ -6,7 +6,8 @@ import Metal
 import MetalKit
 
 class PlaTrii {
-    
+    static var logVertex = false
+
     var tri01s: [Tri01]
     var indexBuf: MTLBuffer!
     var vertexBuf: MTLBuffer!

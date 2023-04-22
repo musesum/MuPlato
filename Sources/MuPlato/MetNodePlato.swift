@@ -23,10 +23,10 @@ public class MetNodePlato: MetNode {
     let platonic: Platonic
     
     public init(_ pipeline: MetPipeline,
-                _ filename: String = "pipe.plato") {
+                _ filename: String = "render.plato") {
 
         self.platonic = Platonic(pipeline.device)
-        super.init(pipeline, "plato", "pipe.plato", .render)
+        super.init(pipeline, "plato", "render.plato", .render)
         self.filename = filename
 
         buildShader()
@@ -44,13 +44,13 @@ public class MetNodePlato: MetNode {
 
         makeLibrary()
 
-        let vertexName = "platoVertex"
-        var fragmentName = (platonic.platoOps.reflectCube
+        let vertexName = "plato"
+        let fragmentName = (platonic.platoOps.reflectCube
                             ? (platonic.platoOps.hasCamera
                                ? "platoCubeIndex"
                                : "platoCubeColor")
                             : "platoColor")
-        fragmentName = "platoCubeIndex" //??? 
+        //??? fragmentName = "platoCubeIndex" //??? 
         
         let vd = MTLVertexDescriptor()
         var offset = 0
@@ -129,7 +129,8 @@ public class MetNodePlato: MetNode {
         } else if platonic.platoOps.reflectCube {
             return //??? 
         }
-        
+
+
         renderEnc.drawIndexedPrimitives(
             type              : .triangle,
             indexCount        : indexCount,

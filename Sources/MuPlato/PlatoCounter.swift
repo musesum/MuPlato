@@ -26,7 +26,6 @@ class PlatoCounter {
     let harmoDiv: Int
     let harmoMod: Int
 
-
     var range01: Float { Float(step) / Float(steps) }
 
     init(_ counter: Int, _ viaFrame: Bool, harmonic: Int = 0) {

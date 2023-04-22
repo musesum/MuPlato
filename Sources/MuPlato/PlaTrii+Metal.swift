@@ -20,8 +20,8 @@ extension PlaTrii {
         var indices =  [UInt32](repeating:        0, count: indexCount)
         var vi = 0
 
-        let logVertex = false
-        if logVertex { print() }
+        
+        if PlaTrii.logVertex { print() }
 
         for tri in tri01s {
 
@@ -53,7 +53,7 @@ extension PlaTrii {
                     vertices[vi].color = colorForId(tri.id, p.h, platonic)
                 }
                 indices[vi] = UInt32(vi)
-                if logVertex {
+                if PlaTrii.logVertex {
                     logVert01(vertices[vi], vi)
                 }
                 vi += 1

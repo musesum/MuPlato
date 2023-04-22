@@ -11,7 +11,7 @@ open class Platonic {
     var plaTrii: PlaTrii
     var plaTriis = [PlaTrii]()
 
-    var device: MTLDevice
+    var device: MTLDevice 
 
     var harmonicSteps = 2000
     var colorCount = 70
@@ -19,19 +19,18 @@ open class Platonic {
 
     public var platoOps = PlatoOps([
 
-        //.showCube,
-        .showPlato,
-        .reflectCube,
+        .showCube,
+        //.showPlato,
+        //.reflectCube,
         //.cameraBack,
         //.cameraFront,
         //.faceMask,
-        .trackMotion,
+            .trackMotion,
         //.colorizeTri,
         .colorShade,
         .invertShade,
         .drawFill,
     ])
-
 
     init(_ device: MTLDevice) {
 
@@ -75,6 +74,7 @@ open class Platonic {
             plaTrii.updateBuffers(device, counter, self)
         }
     }
+    
     func logBuildCounter(_ i: Int) {
         //print("build phase: \(i) harmonic: \(counter.harmonic )")
     }

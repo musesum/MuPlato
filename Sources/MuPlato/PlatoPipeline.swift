@@ -32,7 +32,7 @@ open class PlatoPipeline: MetPipeline {
 
         let platoOps = platonic.platoOps
         if platoOps.hasCamera {
-            cameraNode = MetNodeCamera(self, "camera", "pipe.camera")
+            cameraNode = MetNodeCamera(self, "camera", "compute.camera")
             nodes.append(cameraNode)
         }
         if platoOps.hasCube {
