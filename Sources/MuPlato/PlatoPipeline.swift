@@ -49,7 +49,7 @@ open class PlatoPipeline: MetPipeline {
             }
         }
         if platoOps.showPlato {
-            platoNode = MetNodePlato(self)
+            platoNode = MetNodePlato(self, platonic)
             nodes.append(platoNode)
         }
         assemblePipeline()
@@ -66,7 +66,7 @@ open class PlatoPipeline: MetPipeline {
     public func pause() {
 
         if let counter = platonic?.counter {
-            counter.paused.toggle()
+            counter.paused = !counter.paused
             print(counter.paused ? "paused counter: \(counter.counter)" : "running")
         }
     }

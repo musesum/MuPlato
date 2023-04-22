@@ -19,11 +19,11 @@ open class Platonic {
 
     public var platoOps = PlatoOps([
 
-        .showCube,
-        //.showPlato,
-        //.reflectCube,
+        //.showCube,
+        .showPlato,
+        .reflectCube,
         //.cameraBack,
-        //.cameraFront,
+        // .cameraFront,
         //.faceMask,
             .trackMotion,
         //.colorizeTri,

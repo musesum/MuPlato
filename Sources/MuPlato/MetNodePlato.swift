@@ -23,9 +23,10 @@ public class MetNodePlato: MetNode {
     let platonic: Platonic
     
     public init(_ pipeline: MetPipeline,
+                _ platonic: Platonic,
                 _ filename: String = "render.plato") {
 
-        self.platonic = Platonic(pipeline.device)
+        self.platonic = platonic
         super.init(pipeline, "plato", "render.plato", .render)
         self.filename = filename
 
