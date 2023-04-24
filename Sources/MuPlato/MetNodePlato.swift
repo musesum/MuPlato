@@ -23,10 +23,10 @@ public class MetNodePlato: MetNode {
     let platonic: Platonic
     
     public init(_ pipeline: MetPipeline,
-                _ platonic: Platonic,
                 _ filename: String = "render.plato") {
 
-        self.platonic = platonic
+        self.platonic = ((pipeline as? PlatoPipeline)?.platonic
+                         ?? Platonic(pipeline.device))
         super.init(pipeline, "plato", "render.plato", .render)
         self.filename = filename
 
@@ -51,7 +51,7 @@ public class MetNodePlato: MetNode {
                                ? "platoCubeIndex"
                                : "platoCubeColor")
                             : "platoColor")
-        //??? fragmentName = "platoCubeIndex" //??? 
+        //?? fragmentName = "platoCubeIndex" //??
         
         let vd = MTLVertexDescriptor()
         var offset = 0
@@ -146,9 +146,9 @@ public class MetNodePlato: MetNode {
 
         updateUniforms()
         if let cubeNode = inNode as? MetNodeCubemap {
-            inTex = cubeNode.cubeTex //???
+            inTex = cubeNode.cubeTex //??
         } else {
-            inTex = inNode?.outTex //???
+            inTex = inNode?.outTex //??
         }
     }
 }

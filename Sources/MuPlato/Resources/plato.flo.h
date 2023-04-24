@@ -1,11 +1,11 @@
 
 _menu.canvas  {
-    plato(svg "icon.plato.dodec") {
+    plato (svg "icon.plato.dodec") {
         cube (svg "icon.plato.cube") {
-            wire    (svg "icon.wireframe")
+            wire (svg "icon.wireframe")
             reflect (svg "icon.reflect")
         }
-        motion  (symbol "gyroscope")
+        motion (symbol "gyroscope")
         morphing (svg "icon.counter")
         colorize (svg "icon.peacock") {
             morphdex (symbol "calendar.day.timeline.left")

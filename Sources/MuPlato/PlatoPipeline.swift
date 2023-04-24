@@ -49,7 +49,7 @@ open class PlatoPipeline: MetPipeline {
             }
         }
         if platoOps.showPlato {
-            platoNode = MetNodePlato(self, platonic)
+            platoNode = MetNodePlato(self)
             nodes.append(platoNode)
         }
         assemblePipeline()

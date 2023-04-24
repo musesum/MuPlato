@@ -40,6 +40,7 @@ open class PlatoFlo {
     var morphdex  = 0
 
     init() {
+
         let plato = root.findPath("model.canvas.plato")
         cube˚     = plato?.findPath("cube")
         reflect˚  = cube˚?.findPath("reflect")
