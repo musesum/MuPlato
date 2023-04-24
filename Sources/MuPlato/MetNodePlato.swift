@@ -21,6 +21,8 @@ public class MetNodePlato: MetNode {
     var uniformBuf: MTLBuffer!
 
     let platonic: Platonic
+    let platoFlo = PlatoFlo.shared
+    let cubeFlo = CubeFlo.shared
     
     public init(_ pipeline: MetPipeline,
                 _ filename: String = "render.plato") {
@@ -29,7 +31,6 @@ public class MetNodePlato: MetNode {
                          ?? Platonic(pipeline.device))
         super.init(pipeline, "plato", "render.plato", .render)
         self.filename = filename
-
         buildShader()
         buildResources()
     }
@@ -46,16 +47,15 @@ public class MetNodePlato: MetNode {
         makeLibrary()
 
         let vertexName = "plato"
-        let fragmentName = (platonic.platoOps.reflectCube
-                            ? (platonic.platoOps.hasCamera
+        let fragmentName = (platoFlo.coloriz
+                            ? "platoColor"
+                            : (cubeFlo.reflect
                                ? "platoCubeIndex"
-                               : "platoCubeColor")
-                            : "platoColor")
-        //?? fragmentName = "platoCubeIndex" //??
-        
+                               : "platoCubeColor"))
+
         let vd = MTLVertexDescriptor()
         var offset = 0
-        
+
         for i in 0 ..< 6 {
             vd.attributes[i].bufferIndex = 0
             vd.attributes[i].offset = offset
@@ -100,11 +100,12 @@ public class MetNodePlato: MetNode {
     override public func renderCommand(_ renderEnc: MTLRenderCommandEncoder) {
 
         guard let indexBuf = platonic.plaTrii.indexBuf else { return }
-
+        //??? guard platoFlo.show else { return }
+        
         let uniformLen = MemoryLayout<PlatoUniforms>.size
         let indexCount = indexBuf.length / MemoryLayout<UInt32>.stride
 
-        renderEnc.setTriangleFillMode(platonic.platoOps.drawFill ? .fill : .lines)
+        renderEnc.setTriangleFillMode(platoFlo.wire ? .lines : .fill)
         renderEnc.setRenderPipelineState(renderState)
         renderEnc.setDepthStencilState(pipeline.depthStencil(write: true))
         
@@ -113,24 +114,23 @@ public class MetNodePlato: MetNode {
         renderEnc.setFragmentBuffer(uniformBuf, offset: uniformLen, index: 0)
         
         if let cubeNode = pipeline.cubemapNode {
-            if platonic.platoOps.reflectCube,
+            if cubeFlo.reflect,
                let cubeTex    = cubeNode.cubeTex,
                let cubeSamplr = cubeNode.cubeSamplr {
                 
                 renderEnc.setFragmentTexture(cubeTex, index: 0)
                 renderEnc.setFragmentSamplerState(cubeSamplr, index: 0)
             }
-            if platonic.platoOps.hasCamera {
+            if cubeFlo.reflect {
                 guard let inTex    = cubeNode.inTex    else { return }
                 guard let inSamplr = cubeNode.inSamplr else { return }
                 
                 renderEnc.setFragmentTexture(inTex, index: 1)
                 renderEnc.setFragmentSamplerState(inSamplr, index: 1)
             }
-        } else if platonic.platoOps.reflectCube {
+        } else if cubeFlo.reflect {
             return //??? 
         }
-
 
         renderEnc.drawIndexedPrimitives(
             type              : .triangle,

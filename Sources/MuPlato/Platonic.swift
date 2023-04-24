@@ -16,27 +16,29 @@ open class Platonic {
     var harmonicSteps = 2000
     var colorCount = 70
     var colorStride = 1
+    let platoFlo = PlatoFlo.shared
 
-    public var platoOps = PlatoOps([
-
-        //.showCube,
-        .showPlato,
-        .reflectCube,
-        //.cameraBack,
-        // .cameraFront,
-        //.faceMask,
-            .trackMotion,
-        //.colorizeTri,
-        .colorShade,
-        .invertShade,
-        .drawFill,
-    ])
+//???    public var platoOps = PlatoOps([
+//
+//        .showCube,
+//        .showPlato,
+//        .reflectCube,
+//        //.cameraBack,
+//        // .cameraFront,
+//        //.faceMask,
+//        .trackMotion,
+//        //.colorizeTri,
+//        .colorShade,
+//        .invertShade,
+//        .drawFill,
+//    ])
 
     init(_ device: MTLDevice) {
 
         self.plaTrii = PlaTrii([])
         self.device = device
-        self.counter = PlatoCounter(8000, platoOps.hasCamera, harmonic: 4)
+        let viaFrame = true //??? platoOps.hasCamera
+        self.counter = PlatoCounter(8000, viaFrame, harmonic: 4)
 
         let sd = MTLSamplerDescriptor()
         sd.minFilter = .nearest

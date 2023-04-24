@@ -18,6 +18,10 @@ open class PlatoPipeline: MetPipeline {
     var facePose: MetFacePose!
     var displayLink: MetDisplayLink!
 
+    let cameraFlo = CameraFlo.shared
+    let cubeFlo = CubeFlo.shared
+    let platoFlo = CubeFlo.shared
+
     override public init() {
         super.init()
         motion = Motion.shared
@@ -30,25 +34,25 @@ open class PlatoPipeline: MetPipeline {
         metalLayer.pixelFormat = .bgra8Unorm // was bgr10_xr
         metalLayer.framebufferOnly = true
 
-        let platoOps = platonic.platoOps
-        if platoOps.hasCamera {
+
+        if cameraFlo.stream {
             cameraNode = MetNodeCamera(self, "camera", "compute.camera")
             nodes.append(cameraNode)
         }
-        if platoOps.hasCube {
-            cubemapNode = MetNodeCubemap(self, platonic.platoOps.hasCamera)
+        if cubeFlo.show {
+            cubemapNode = MetNodeCubemap(self, cameraFlo.stream)
             if let cubemapNode {
                 let zero = Float.zero
                 let f = Float(0.75)
                 cubemapNode.addBuffer("frame",  zero)
                 cubemapNode.addBuffer("mirror", [zero,zero])
                 cubemapNode.addBuffer("repeat", [f,f])
-                cubemapNode.isOn = platoOps.showCube
+                cubemapNode.isOn = cubeFlo.show
 
                 nodes.append(cubemapNode)
             }
         }
-        if platoOps.showPlato {
+        if platoFlo.show {
             platoNode = MetNodePlato(self)
             nodes.append(platoNode)
         }

@@ -12,7 +12,9 @@ extension PlaTrii {
                        _ counter: PlatoCounter,
                        _ platonic: Platonic) {
 
-        let platoOps = platonic.platoOps
+        let platoFlo = PlatoFlo.shared
+        let cubeFlo = CubeFlo.shared
+
         let vertexCount = tri01s.count*3
         let indexCount = tri01s.count*3
 
@@ -44,10 +46,10 @@ extension PlaTrii {
                 vertices[vi].extra.y = Float(tri.id) // faceId
                 vertices[vi].extra.z = Float(p.h) // harmonic
 
-                if !platoOps.colorizeTri ||
-                    platoOps.reflectCube {
+                if !platoFlo.coloriz ||
+                    cubeFlo.reflect {
                     let shade =  0.33333 + Float(p.h) / 3 * 0.5
-                    let grey = platoOps.invertShade ? 1 - shade : shade
+                    let grey = platoFlo.invert ? 1 - shade : shade
                     vertices[vi].color = Pnt4(grey, grey, grey, 1)
                 } else {
                     vertices[vi].color = colorForId(tri.id, p.h, platonic)
@@ -69,8 +71,9 @@ extension PlaTrii {
                     _ harmonic: Int,
                     _ platonic: Platonic) -> Pnt4 {
 
-        let platoOps = platonic.platoOps
-        let grey = 0.33333 + (platoOps.colorShade ? Float(harmonic) / 3 * 0.5 : 0)
+        let platoFlo = PlatoFlo.shared
+
+        let grey = 0.33333 + (platoFlo.shadow ? Float(harmonic) / 3 * 0.5 : 0)
 
         
         let colorHue = CGFloat((id * platonic.colorStride) % platonic.colorCount ) / CGFloat(platonic.colorCount)
