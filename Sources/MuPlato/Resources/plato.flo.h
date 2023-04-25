@@ -1,32 +1,47 @@
 
-_menu.canvas  {
-    plato (svg "icon.plato.dodec") {
-        cube (svg "icon.plato.cube") {
-            wire (svg "icon.wireframe")
-            reflect (svg "icon.reflect")
-        }
-        motion (symbol "gyroscope")
-        morphing (svg "icon.counter")
-        colorize (svg "icon.peacock") {
-            morphdex (symbol "calendar.day.timeline.left")
-            colors (image "icon.pal.main")
+_menu.canvas {
+    cube (svg "icon.plato.cube") {
+
+        reflect (svg "icon.reflect")
+        motion  (symbol "gyroscope")
+        rotate  (svg "icon.direction")
+
+        plato(svg "icon.plato.dodec") {
+            coloriz (svg "icon.peacock") {
+                wire   (svg "icon.wireframe")
+                shadow (symbol "shadow")
+                invert (symbol "circle.lefthalf.filled")
+            }
+            morping (svg "icon.counter")
+            counter (symbol "calendar.day.timeline.left")
+            rotate  (svg "icon.direction")
+            zoom    (svg "icon.zoom")
         }
     }
 }
+
 menu {
     SW @ _menu
 }
-model.canvas.plato {
-    cube (tog 0…1=1) {
-        wire    (tog 0…1=1)
-        reflect (tog 0…1=1)
-    } <> shader.render.cubemap.on
 
-    motion  (tog 0…1=1)
-    morphing(tog 0…1=1)
-    
-    colorize(tog 0…1=1) {
-        morphdex(val 0…1=1)
-        colors(val 0…1=1)
+model.canvas {
+    cube (tog 0…1=0)  {
+        reflect (tog 0…1=1)
+        motion  (tog 0…1=1)
+        rotate  (x -1…1=0, y -1…1=0)
+        plato (tog 0…1=1) {
+            coloriz (tog 0…1=1) {
+                colors (val 0…1=1)
+                stride (val 0…1=1)
+                wire   (tog 0…1)
+                shadow (tog 0…1=1)
+                invert (tog 0…1=1)
+            }
+            morping (tog 0…1=1)
+            counter (val 0…1=1)
+            rotate  (x -1…1, y -1…1)
+            zoom    (val 0…1=1)
+        }
+        fill (tog 0…1=1) <> shader.render.cubemap.on
     }
 }

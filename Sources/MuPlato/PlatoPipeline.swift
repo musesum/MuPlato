@@ -34,12 +34,11 @@ open class PlatoPipeline: MetPipeline {
         metalLayer.pixelFormat = .bgra8Unorm // was bgr10_xr
         metalLayer.framebufferOnly = true
 
-
         if cameraFlo.stream {
             cameraNode = MetNodeCamera(self, "camera", "compute.camera")
             nodes.append(cameraNode)
         }
-        if cubeFlo.show {
+        if cubeFlo.fill {
             cubemapNode = MetNodeCubemap(self, cameraFlo.stream)
             if let cubemapNode {
                 let zero = Float.zero

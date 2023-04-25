@@ -7,26 +7,15 @@ open class CameraFlo {
 
     static public let shared = CameraFlo()
 
-    public let root = Flo.root
-
-    var stream˚ : Flo?
-    var facing˚ : Flo?
-    var mask˚   : Flo?
-
-    var stream = false
-    var facing = false
-    var mask   = false
+    private var stream˚: Flo? ; var stream = false
+    private var facing˚: Flo? ; var facing = false
+    private var mask˚  : Flo? ; var mask   = false
 
     init() {
 
-        guard let camera = root.findPath("model.canvas.camera") else { return }
-
-        stream˚ = camera.bindPath("stream")
-        facing˚ = camera.bindPath("facing")
-        mask˚   = camera.bindPath("mask")
-
-        stream˚?.addClosure { flo,_ in self.stream = flo.bool }
-        facing˚?.addClosure { flo,_ in self.facing = flo.bool }
-        mask˚?  .addClosure { flo,_ in self.mask   = flo.bool }
+        let camera = Flo.root.bind("model.canvas.camera")
+        stream˚ = camera.bind("stream") { f,_ in self.stream = f.bool }
+        facing˚ = camera.bind("facing") { f,_ in self.facing = f.bool }
+        mask˚   = camera.bind("mask"  ) { f,_ in self.mask   = f.bool }
     }
 }
