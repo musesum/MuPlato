@@ -46,8 +46,7 @@ extension PlaTrii {
                 vertices[vi].extra.y = Float(tri.id) // faceId
                 vertices[vi].extra.z = Float(p.h) // harmonic
 
-                if !platoFlo.coloriz ||
-                    cubeFlo.reflect {
+                if !platoFlo.coloriz {
                     let shade =  0.33333 + Float(p.h) / 3 * 0.5
                     let grey = platoFlo.invert ? 1 - shade : shade
                     vertices[vi].color = Pnt4(grey, grey, grey, 1)
@@ -75,8 +74,9 @@ extension PlaTrii {
 
         let grey = 0.33333 + (platoFlo.shadow ? Float(harmonic) / 3 * 0.5 : 0)
 
-        
-        let colorHue = CGFloat((id * platonic.colorStride) % platonic.colorCount ) / CGFloat(platonic.colorCount)
+        let count = max(CGFloat(platonic.colorCount),1)
+        let colorHue = CGFloat((id * platonic.colorStride)
+                               % Int(count)) / count
         let cg = UIColor(hue: colorHue,
                          saturation: 1,
                          brightness: 1,

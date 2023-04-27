@@ -36,9 +36,9 @@ open class PlatoPipeline: MetPipeline {
 
         if cameraFlo.stream {
             cameraNode = MetNodeCamera(self, "camera", "compute.camera")
-            nodes.append(cameraNode)
+            //??? nodes.append(cameraNode)
         }
-        if cubeFlo.fill {
+        if cubeFlo.backgr {
             cubemapNode = MetNodeCubemap(self, cameraFlo.stream)
             if let cubemapNode {
                 let zero = Float.zero
@@ -47,15 +47,11 @@ open class PlatoPipeline: MetPipeline {
                 cubemapNode.addBuffer("mirror", [zero,zero])
                 cubemapNode.addBuffer("repeat", [f,f])
                 cubemapNode.isOn = cubeFlo.show
-
-                nodes.append(cubemapNode)
             }
         }
         if platoFlo.show {
             platoNode = MetNodePlato(self)
-            nodes.append(platoNode)
         }
-        assemblePipeline()
 
         cameraNode?.setMetalNodeOn(true) {
             MetCamera.shared.startCamera()

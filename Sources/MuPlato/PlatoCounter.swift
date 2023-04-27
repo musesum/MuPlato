@@ -22,7 +22,6 @@ class PlatoCounter {
     public let phases = 11    // number of morphing phases
 
     let phaseMod: Int
-    let stepMod: Int
     let harmoDiv: Int
     let harmoMod: Int
 
@@ -32,15 +31,19 @@ class PlatoCounter {
         self.counter = counter
         self.harmonic = harmonic
         self.steps = viaFrame ? 60 : 100
-        
-        stepMod = steps  // for each phase, step go (0 ..< steps ... 0)
+
         phaseMod = phases * 2
-        harmoDiv = stepMod * phaseMod
+        harmoDiv = steps * phaseMod
         harmoMod = harmonics * 2
         //logConstants()
         //test()
     }
 
+    func setPhase(_ p: CGPoint) {
+        let newStep  = Int(CGFloat(harmoDiv) * p.x)
+        let newHarmo = Int(CGFloat(harmoMod) * p.y)
+        counter = newHarmo * newStep
+    }
     func next(_ count: Int? = nil) {
 
         if firstTime {
@@ -57,7 +60,7 @@ class PlatoCounter {
 
         counter = count ?? counter + 1
 
-        step = counter % stepMod
+        step = counter % steps
 
         let phasePrev = phase
         phase = (counter / steps) % phaseMod
@@ -82,7 +85,7 @@ class PlatoCounter {
     }
 
     func logConstants() {
-        print("phaseMod:\(phaseMod):  harmoDiv:\(harmoDiv)  harmoMod:\(harmoMod)  stepMod:\(stepMod)  n:\(range01.digits(3...3))")
+        print("phaseMod:\(phaseMod):  harmoDiv:\(harmoDiv)  harmoMod:\(harmoMod)  steps:\(steps)  n:\(range01.digits(3...3))")
     }
     func logCounter() {
         if phase != 100 { return }

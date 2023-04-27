@@ -13,7 +13,7 @@ open class CameraFlo {
 
     init() {
 
-        let camera = Flo.root.bind("model.canvas.camera")
+        let camera = Flo.root˚.bind("model.camera")
         stream˚ = camera.bind("stream") { f,_ in self.stream = f.bool }
         facing˚ = camera.bind("facing") { f,_ in self.facing = f.bool }
         mask˚   = camera.bind("mask"  ) { f,_ in self.mask   = f.bool }

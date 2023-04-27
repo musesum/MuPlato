@@ -49,9 +49,8 @@ public class MetNodePlato: MetNode {
         let vertexName = "plato"
         let fragmentName = (platoFlo.coloriz
                             ? "platoColor"
-                            : (cubeFlo.reflect
-                               ? "platoCubeIndex"
-                               : "platoCubeColor"))
+                            : "platoCubeIndex")
+        // currentl not using  "platoCubeColor" for now 6 static images
 
         let vd = MTLVertexDescriptor()
         var offset = 0
@@ -100,7 +99,6 @@ public class MetNodePlato: MetNode {
     override public func renderCommand(_ renderEnc: MTLRenderCommandEncoder) {
 
         guard let indexBuf = platonic.plaTrii.indexBuf else { return }
-        //??? guard platoFlo.show else { return }
         
         let uniformLen = MemoryLayout<PlatoUniforms>.size
         let indexCount = indexBuf.length / MemoryLayout<UInt32>.stride
@@ -113,24 +111,16 @@ public class MetNodePlato: MetNode {
         renderEnc.setVertexBuffer(uniformBuf, offset: uniformLen, index: 1)
         renderEnc.setFragmentBuffer(uniformBuf, offset: uniformLen, index: 0)
         
-        if let cubeNode = pipeline.cubemapNode {
-            if cubeFlo.reflect,
-               let cubeTex    = cubeNode.cubeTex,
-               let cubeSamplr = cubeNode.cubeSamplr {
-                
-                renderEnc.setFragmentTexture(cubeTex, index: 0)
-                renderEnc.setFragmentSamplerState(cubeSamplr, index: 0)
-            }
-            if cubeFlo.reflect {
-                guard let inTex    = cubeNode.inTex    else { return }
-                guard let inSamplr = cubeNode.inSamplr else { return }
-                
-                renderEnc.setFragmentTexture(inTex, index: 1)
-                renderEnc.setFragmentSamplerState(inSamplr, index: 1)
-            }
-        } else if cubeFlo.reflect {
-            return //??? 
-        }
+        guard let cubeNode = pipeline.cubemapNode else { return }
+        guard let cubeTex    = cubeNode.cubeTex else { return }
+        guard let cubeSamplr = cubeNode.cubeSamplr else { return }
+        renderEnc.setFragmentTexture(cubeTex, index: 0)
+        renderEnc.setFragmentSamplerState(cubeSamplr, index: 0)
+
+        guard let inTex    = cubeNode.inTex    else { return }
+        guard let inSamplr = cubeNode.inSamplr else { return }
+        renderEnc.setFragmentTexture(inTex, index: 1)
+        renderEnc.setFragmentSamplerState(inSamplr, index: 1)
 
         renderEnc.drawIndexedPrimitives(
             type              : .triangle,

@@ -12,10 +12,10 @@ _menu.canvas {
                 shadow (symbol "shadow")
                 invert (symbol "circle.lefthalf.filled")
             }
-            morping (svg "icon.counter")
-            counter (symbol "calendar.day.timeline.left")
-            rotate  (svg "icon.direction")
-            zoom    (svg "icon.zoom")
+            morph (svg "icon.counter")
+            count (symbol "calendar.day.timeline.left")
+            rotate(svg "icon.direction")
+            zoom  (svg "icon.zoom")
         }
     }
 }
@@ -37,10 +37,10 @@ model.canvas {
                 shadow (tog 0…1=1)
                 invert (tog 0…1=1)
             }
-            morping (tog 0…1=1)
-            counter (val 0…1=1)
-            rotate  (x -1…1, y -1…1)
-            zoom    (val 0…1=1)
+            morph  (tog 0…1=1)
+            count  (val 0…1=1)
+            rotate (x -1…1, y -1…1)
+            zoom   (val 0…1=1)
         }
         fill (tog 0…1=1) <> shader.render.cubemap.on
     }

@@ -14,15 +14,20 @@ open class Platonic {
     var device: MTLDevice 
 
     var harmonicSteps = 2000
-    var colorCount = 70
-    var colorStride = 1
+
     let platoFlo = PlatoFlo.shared
     let cameraFlo = CameraFlo.shared
+    var platoPhase = CGPoint.zero
+
+    var platoColors = CGPoint.zero
+    var colorCount: Int { Int(platoColors.y) }
+    var colorStride: Int { Int(platoColors.x) }
 
     init(_ device: MTLDevice) {
 
         self.plaTrii = PlaTrii([])
         self.device = device
+        self.platoPhase = platoFlo.phase
         self.counter = PlatoCounter(8000, cameraFlo.stream, harmonic: 4)
 
         let sd = MTLSamplerDescriptor()
@@ -34,34 +39,57 @@ open class Platonic {
 
     func nextCounter() {
 
-        counter.next()
+        if platoPhase != platoFlo.phase {
 
-        if counter.newHarmonic {
+            platoPhase = platoFlo.phase
+            counter.setPhase(platoPhase)
+            counter.next()
+            buildHarmonic()
+            buildPhase()
 
-            Tri01.reset()
-            buildAll()
+        } else  if platoColors != platoFlo.colors {
 
-            for phase in 0 ..< plaTriis.count {
-                let plaTrii = plaTriis[phase]
-                _ = plaTrii.trisect(counter.harmonic, harmonicSteps, phase)
+            platoColors = platoFlo.colors
+            counter.next()
+            //?? buildHarmonic()
+            //?? buildPhase()
+
+
+        } else if platoFlo.morph {
+
+            counter.next()
+
+            if counter.newHarmonic {
+                buildHarmonic()
             }
-            for i in 0 ..< plaTriis.count {
-
-                let plaTrii = plaTriis[i]
-
-                logBuildCounter(i)
-                for tri in plaTrii.tri01s {
-                    tri.setId(i)
-                }
+            if counter.newPhase {
+                buildPhase()
             }
-        }
-        if counter.newPhase {
-            logCounter()
-            plaTrii = plaTriis[counter.phase]
-            plaTrii.updateBuffers(device, counter, self)
         }
     }
-    
+    func buildHarmonic() {
+        Tri01.reset()
+        buildAll()
+
+        for phase in 0 ..< plaTriis.count {
+            let plaTrii = plaTriis[phase]
+            _ = plaTrii.trisect(counter.harmonic, harmonicSteps, phase)
+        }
+        for i in 0 ..< plaTriis.count {
+
+            let plaTrii = plaTriis[i]
+
+            logBuildCounter(i)
+            for tri in plaTrii.tri01s {
+                tri.setId(i)
+            }
+        }
+    }
+    func buildPhase() {
+        logCounter()
+        plaTrii = plaTriis[counter.phase]
+        plaTrii.updateBuffers(device, counter, self)
+    }
     func logBuildCounter(_ i: Int) {
         //print("build phase: \(i) harmonic: \(counter.harmonic )")
     }
