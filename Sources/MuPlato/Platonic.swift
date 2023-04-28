@@ -51,9 +51,6 @@ open class Platonic {
 
             platoColors = platoFlo.colors
             counter.next()
-            //?? buildHarmonic()
-            //?? buildPhase()
-
 
         } else if platoFlo.morph {
 

@@ -1,4 +1,9 @@
 
+sky.color { // false color mapping palette
+    pal0 ("roygbik")
+    pal1 ("wKZ")
+    xfade (val 0…1=0.5) <~ main.anim
+}
 _menu.canvas {
     cube (svg "icon.plato.cube") {
 

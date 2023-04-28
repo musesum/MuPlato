@@ -25,7 +25,7 @@ public class MetNodePlato: MetNode {
     let cubeFlo = CubeFlo.shared
     
     public init(_ pipeline: MetPipeline,
-                _ filename: String = "render.plato") {
+                _ getPal: @escaping GetTextureFunc) {
 
         self.platonic = ((pipeline as? PlatoPipeline)?.platonic
                          ?? Platonic(pipeline.device))

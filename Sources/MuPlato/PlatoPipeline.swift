@@ -4,6 +4,8 @@
 import UIKit
 import Metal
 import MuMetal
+import MuFlo
+import MuColor
 import simd
 
 open class PlatoPipeline: MetPipeline {
@@ -20,7 +22,8 @@ open class PlatoPipeline: MetPipeline {
 
     let cameraFlo = CameraFlo.shared
     let cubeFlo = CubeFlo.shared
-    let platoFlo = CubeFlo.shared
+    let platoFlo = PlatoFlo.shared
+    private var colorFlo = ColorFlo(Flo.root˚)
 
     override public init() {
         super.init()
@@ -50,7 +53,7 @@ open class PlatoPipeline: MetPipeline {
             }
         }
         if platoFlo.show {
-            platoNode = MetNodePlato(self)
+            platoNode = MetNodePlato(self, colorFlo.getMix)
         }
 
         cameraNode?.setMetalNodeOn(true) {
