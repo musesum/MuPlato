@@ -17,13 +17,15 @@ struct PlatoUniforms {
 public class MetNodePlato: MetNode {
 
     var renderState: MTLRenderPipelineState!
-    var samplerState: MTLSamplerState!
+    var palSamplr: MTLSamplerState!
     var uniformBuf: MTLBuffer!
 
     let platonic: Platonic
     let platoFlo = PlatoFlo.shared
     let cubeFlo = CubeFlo.shared
-    
+
+    public var getPal: GetTextureFunc?
+
     public init(_ pipeline: MetPipeline,
                 _ getPal: @escaping GetTextureFunc) {
 
@@ -31,12 +33,14 @@ public class MetNodePlato: MetNode {
                          ?? Platonic(pipeline.device))
         super.init(pipeline, "plato", "render.plato", .render)
         self.filename = filename
+        self.getPal = getPal
+
         buildShader()
         buildResources()
     }
     
     func buildResources() {
-        
+        palSamplr = pipeline.makeSampler(normalized: true)
         uniformBuf = pipeline.device.makeBuffer(
             length: MemoryLayout<PlatoUniforms>.size * 2,
             options: .cpuCacheModeWriteCombined)!
@@ -110,8 +114,12 @@ public class MetNodePlato: MetNode {
         renderEnc.setVertexBuffer(platonic.plaTrii.vertexBuf, offset: 0, index: 0)
         renderEnc.setVertexBuffer(uniformBuf, offset: uniformLen, index: 1)
         renderEnc.setFragmentBuffer(uniformBuf, offset: uniformLen, index: 0)
+
+        guard let altTex else { return }
+        renderEnc.setFragmentTexture(altTex, index: 2)
+        renderEnc.setFragmentSamplerState(palSamplr, index: 2)
         
-        guard let cubeNode = pipeline.cubemapNode else { return }
+        guard let cubeNode   = pipeline.cubemapNode else { return }
         guard let cubeTex    = cubeNode.cubeTex else { return }
         guard let cubeSamplr = cubeNode.cubeSamplr else { return }
         renderEnc.setFragmentTexture(cubeTex, index: 0)
@@ -135,11 +143,31 @@ public class MetNodePlato: MetNode {
     override public func setupInOutTextures(via: String) {
 
         updateUniforms()
+        altTex = altTex ?? makePaletteTex() // 256 false color palette
+        if let altTex,
+           let getPal {
+            
+            let palSize = 256
+            let pixSize = MemoryLayout<UInt32>.size
+            let palRegion = MTLRegionMake3D(0, 0, 0, palSize, 1, 1)
+            let bytesPerRow = palSize * pixSize
+            let palBytes = getPal(palSize)
+            altTex.replace(region: palRegion, mipmapLevel: 0, withBytes: palBytes, bytesPerRow: bytesPerRow)
+        }
+        func makePaletteTex() -> MTLTexture? {
+
+            let paletteTex = MetTexCache
+                .makeTexturePixelFormat(.bgra8Unorm,
+                                        size: CGSize(width: 256, height: 1),
+                                        device: pipeline.device)
+            return paletteTex
+        }
         if let cubeNode = inNode as? MetNodeCubemap {
             inTex = cubeNode.cubeTex //??
         } else {
             inTex = inNode?.outTex //??
         }
+        
     }
 }
 

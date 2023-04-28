@@ -13,8 +13,6 @@ extension PlaTrii {
                        _ platonic: Platonic) {
 
         let platoFlo = PlatoFlo.shared
-        let cubeFlo = CubeFlo.shared
-
         let vertexCount = tri01s.count*3
         let indexCount = tri01s.count*3
 
