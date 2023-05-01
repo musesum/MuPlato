@@ -10,7 +10,6 @@ struct Pnt01 {
     let id: Int // unique ID
     let h: Harmonic // > 0 was created by subdividing triangle
 
-    static let HarmonicShift = 1_000_000
     static var ID = Plato.Max.rawValue + 1
     static func nextId() -> Int {
         ID += 1
@@ -98,6 +97,7 @@ struct Pnt01 {
         self.id = p.rawValue
         self.h = 0
     }
+    
     /// the Plato point have the same range where c.0 === c.1
     init(_ a2: (Pnt01,Pnt01),_ b: Pnt01, _ p: Plato) {
         self.p0 = Pnt01.mid2(a2.0, a2.1).p0
@@ -113,6 +113,7 @@ struct Pnt01 {
         self.id = p.rawValue
         self.h = 0
     }
+
     /// the Plato point have the same range where c.0 === c.1
     init(_ m0: Pnt,_ m1: Pnt, harmonic h: Int, steps: Int) {
         let hh = Double(steps - h)/Double(steps)
@@ -122,7 +123,6 @@ struct Pnt01 {
         self.h = h
     }
 
-
     /// the Plato point have the same range where c.0 === c.1
     init(_ a2: (Pnt01,Pnt01),_ b2: (Pnt01,Pnt01), _ p: Plato) {
         self.p0 = Pnt01.mid2(a2.0, a2.1).p0
@@ -130,6 +130,7 @@ struct Pnt01 {
         self.id = p.rawValue
         self.h = 0
     }
+
     init(mid: (Pnt01,Pnt01), _ p: Plato) {
         let m = Pnt01.mid2(mid.0, mid.1)
         self.p0 = m.p0

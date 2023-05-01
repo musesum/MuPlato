@@ -8,12 +8,12 @@ import UIKit
 open class Platonic {
 
     var counter: PlatoCounter
-    var plaTrii: PlaTrii
-    var plaTriis = [PlaTrii]()
+    var plaTrii: PlatoTris
+    var plaTriis = [PlatoTris]()
 
     var device: MTLDevice 
 
-    var harmonicSteps = 2000
+    var harmonicSteps = 500
 
     let platoFlo = PlatoFlo.shared
     let cameraFlo = CameraFlo.shared
@@ -25,7 +25,7 @@ open class Platonic {
 
     init(_ device: MTLDevice) {
 
-        self.plaTrii = PlaTrii([])
+        self.plaTrii = PlatoTris([])
         self.device = device
         self.platoPhase = platoFlo.phase
         self.counter = PlatoCounter(8000, cameraFlo.stream, harmonic: 4)
@@ -96,8 +96,8 @@ open class Platonic {
     func ranges() -> vector_float4 {
         return vector_float4(counter.range01,
                              Float(harmonicSteps),
-                             Float(colorCount),
-                             Float(colorStride))
+                             Float(platoFlo.colors.x),
+                             Float(platoFlo.colors.y))
     }
 
 }

@@ -5,7 +5,7 @@ import Foundation
 import Metal
 import MetalKit
 
-class PlaTrii {
+class PlatoTris {
     static var logVertex = false
 
     var tri01s: [Tri01]

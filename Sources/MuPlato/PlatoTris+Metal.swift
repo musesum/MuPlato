@@ -6,7 +6,7 @@ import Metal
 import Vision
 import UIKit
 
-extension PlaTrii {
+extension PlatoTris {
 
     func updateBuffers(_ device: MTLDevice,
                        _ counter: PlatoCounter,
@@ -21,7 +21,7 @@ extension PlaTrii {
         var vi = 0
 
         
-        if PlaTrii.logVertex { print() }
+        if PlatoTris.logVertex { print() }
 
         for tri in tri01s {
 
@@ -40,11 +40,11 @@ extension PlaTrii {
                 vertices[vi].n0 = pnt4f(  n0, 0)
                 vertices[vi].p1 = pnt4f(p.p1, 1)
                 vertices[vi].n1 = pnt4f(  n1, 0)
-                vertices[vi].extra.x = Float(p.id) // vertId
+                vertices[vi].extra.x = Float(p.id)   // vertId
                 vertices[vi].extra.y = Float(tri.id) // faceId
-                vertices[vi].extra.z = Float(p.h) // harmonic
+                vertices[vi].extra.z = Float(p.h)    // harmonic
 
-                if !platoFlo.coloriz {
+                if platoFlo.style == .reflect { 
                     let shade =  0.33333 + Float(p.h) / 3 * 0.5
                     let grey = platoFlo.invert ? 1 - shade : shade
                     vertices[vi].color = Pnt4(grey, grey, grey, 1)
@@ -52,7 +52,7 @@ extension PlaTrii {
                     vertices[vi].color = colorForId(tri.id, p.h, platonic)
                 }
                 indices[vi] = UInt32(vi)
-                if PlaTrii.logVertex {
+                if PlatoTris.logVertex {
                     logVert01(vertices[vi], vi)
                 }
                 vi += 1

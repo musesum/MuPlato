@@ -14,6 +14,17 @@ struct PlatoUniforms {
     var range01      : vector_float4
 }
 
+enum PlatoStyle: Int {
+    case unknown = -1
+    case hidden  = 0
+    case color   = 1
+    case reflect = 2
+
+    public init(_ i: Int) {
+        self = PlatoStyle(rawValue: i) ?? .hidden
+    }
+}
+
 public class MetNodePlato: MetNode {
 
     var renderState: MTLRenderPipelineState!
@@ -21,8 +32,9 @@ public class MetNodePlato: MetNode {
     var uniformBuf: MTLBuffer!
 
     let platonic: Platonic
-    let platoFlo = PlatoFlo.shared
-    let cubeFlo = CubeFlo.shared
+    let platoFlo   = PlatoFlo.shared
+    let cubeFlo    = CubeFlo.shared
+    var platoStyle = PlatoStyle.unknown
 
     public var getPal: GetTextureFunc?
 
@@ -35,7 +47,7 @@ public class MetNodePlato: MetNode {
         self.filename = filename
         self.getPal = getPal
 
-        buildShader()
+        makeLibrary()
         buildResources()
     }
     
@@ -46,15 +58,26 @@ public class MetNodePlato: MetNode {
             options: .cpuCacheModeWriteCombined)!
     }
 
-    func buildShader() {
+    func updateShader() {
 
-        makeLibrary()
+        if platoStyle == .unknown,
+           platoFlo.style == .unknown {
+            platoStyle = .reflect
+            platoFlo.style = .reflect
+        } else if platoFlo.style == platoStyle {
+            return
+        } else {
+            platoStyle = platoFlo.style
+        }
 
         let vertexName = "plato"
-        let fragmentName = (platoFlo.coloriz
-                            ? "platoColor"
-                            : "platoCubeIndex")
-        // currentl not using  "platoCubeColor" for now 6 static images
+
+        let fragmentName: String
+        switch platoStyle {
+            case .color:    fragmentName = "platoCubeColor"
+            case .reflect:  fragmentName = "platoCubeIndex"
+            default:        fragmentName = "platoColor"
+        }
 
         let vd = MTLVertexDescriptor()
         var offset = 0
@@ -115,10 +138,6 @@ public class MetNodePlato: MetNode {
         renderEnc.setVertexBuffer(uniformBuf, offset: uniformLen, index: 1)
         renderEnc.setFragmentBuffer(uniformBuf, offset: uniformLen, index: 0)
 
-        guard let altTex else { return }
-        renderEnc.setFragmentTexture(altTex, index: 2)
-        renderEnc.setFragmentSamplerState(palSamplr, index: 2)
-        
         guard let cubeNode   = pipeline.cubemapNode else { return }
         guard let cubeTex    = cubeNode.cubeTex else { return }
         guard let cubeSamplr = cubeNode.cubeSamplr else { return }
@@ -130,6 +149,10 @@ public class MetNodePlato: MetNode {
         renderEnc.setFragmentTexture(inTex, index: 1)
         renderEnc.setFragmentSamplerState(inSamplr, index: 1)
 
+        guard let altTex else { return }
+        renderEnc.setFragmentTexture(altTex, index: 2)
+        renderEnc.setFragmentSamplerState(palSamplr, index: 2)
+        
         renderEnc.drawIndexedPrimitives(
             type              : .triangle,
             indexCount        : indexCount,
@@ -142,11 +165,13 @@ public class MetNodePlato: MetNode {
 
     override public func setupInOutTextures(via: String) {
 
+        updateShader()
         updateUniforms()
         altTex = altTex ?? makePaletteTex() // 256 false color palette
+
         if let altTex,
            let getPal {
-            
+
             let palSize = 256
             let pixSize = MemoryLayout<UInt32>.size
             let palRegion = MTLRegionMake3D(0, 0, 0, palSize, 1, 1)

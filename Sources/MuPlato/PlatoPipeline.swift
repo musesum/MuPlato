@@ -41,7 +41,7 @@ open class PlatoPipeline: MetPipeline {
             cameraNode = MetNodeCamera(self, "camera", "compute.camera")
             //??? nodes.append(cameraNode)
         }
-        if cubeFlo.backgr {
+        if cubeFlo.back {
             cubemapNode = MetNodeCubemap(self, cameraFlo.stream)
             if let cubemapNode {
                 let zero = Float.zero
