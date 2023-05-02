@@ -116,9 +116,9 @@ struct Pnt01 {
 
     /// the Plato point have the same range where c.0 === c.1
     init(_ m0: Pnt,_ m1: Pnt, harmonic h: Int, steps: Int) {
-        let hh = Double(steps - h)/Double(steps)
-        self.p0 = m0 * hh
-        self.p1 = m1 * hh
+        //??? let hh = Double(steps - h)/Double(steps)
+        self.p0 = m0 // * hh
+        self.p1 = m1 // * hh
         self.id = Pnt01.nextId()
         self.h = h
     }

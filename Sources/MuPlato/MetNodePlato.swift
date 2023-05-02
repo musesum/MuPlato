@@ -12,6 +12,7 @@ struct PlatoUniforms {
     var projectModel : matrix_float4x4
     var worldCamera  : vector_float4
     var range01      : vector_float4
+    var shadow       : vector_float4
 }
 
 enum PlatoStyle: Int {
@@ -34,7 +35,7 @@ public class MetNodePlato: MetNode {
     let platonic: Platonic
     let platoFlo   = PlatoFlo.shared
     let cubeFlo    = CubeFlo.shared
-    var platoStyle = PlatoStyle.unknown
+    var platoStyle = PlatoStyle.reflect
 
     public var getPal: GetTextureFunc?
 
@@ -60,16 +61,6 @@ public class MetNodePlato: MetNode {
 
     func updateShader() {
 
-        if platoStyle == .unknown,
-           platoFlo.style == .unknown {
-            platoStyle = .reflect
-            platoFlo.style = .reflect
-        } else if platoFlo.style == platoStyle {
-            return
-        } else {
-            platoStyle = platoFlo.style
-        }
-
         let vertexName = "plato"
 
         let fragmentName: String
@@ -82,7 +73,7 @@ public class MetNodePlato: MetNode {
         let vd = MTLVertexDescriptor()
         var offset = 0
 
-        for i in 0 ..< 6 {
+        for i in 0 ..< Vert01.count {
             vd.attributes[i].bufferIndex = 0
             vd.attributes[i].offset = offset
             vd.attributes[i].format = .float4
@@ -117,7 +108,8 @@ public class MetNodePlato: MetNode {
             inverse: identity.inverse.transpose,
             projectModel: projectModel,
             worldCamera: worldCamera,
-            range01: platonic.ranges())
+            range01: platonic.ranges(),
+            shadow: platonic.shadow())
 
         let uniformLen = MemoryLayout<PlatoUniforms>.stride
         memcpy(uniformBuf.contents() + uniformLen, &platoUniforms, uniformLen)
