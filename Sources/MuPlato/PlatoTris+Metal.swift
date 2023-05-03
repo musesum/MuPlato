@@ -12,7 +12,6 @@ extension PlatoTris {
                        _ counter: PlatoCounter,
                        _ platonic: Platonic) {
 
-        let platoFlo = PlatoFlo.shared
         let vertexCount = tri01s.count*3
         let indexCount = tri01s.count*3
 

@@ -102,7 +102,8 @@ open class Platonic {
     func shadow() -> vector_float4 {
         return vector_float4(Float(platoFlo.shadow.x),
                              Float(platoFlo.shadow.y),
-                             Float.zero, Float.zero)
+                             Float(platoFlo.invert),
+                             Float(platoFlo.zoom))
     }
 
 }

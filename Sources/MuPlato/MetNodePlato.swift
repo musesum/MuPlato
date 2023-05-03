@@ -98,7 +98,7 @@ public class MetNodePlato: MetNode {
 
         guard let orientation = Motion.shared.sceneOrientation else { return }
         let perspective = pipeline.perspective()
-        let cameraPosition = vector_float4([ 0, 0, -4, 1 ])
+        let cameraPosition = vector_float4([ 0, 0, -4 * Float(platoFlo.zoom), 1 ])
         let platoView = translation(cameraPosition) * orientation
         let worldCamera = orientation.inverse * -cameraPosition
         let projectModel = perspective * (platoView * identity)
