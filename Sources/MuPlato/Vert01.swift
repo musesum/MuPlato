@@ -6,15 +6,18 @@ import Foundation
 // index ranged  0...1
 
 struct Vert01 {
-    static let count = 3 // used by updateShader to set stride
-
+    static let count = 5 // used by updateShader to set stride
     var p0: SIMD4<Float> // position at lower bound 0...1
     var p1: SIMD4<Float> // position at upper bound 0...1
+    var n0: SIMD4<Float> // normal at lower bound 0...1
+    var n1: SIMD4<Float> // normal at upper bound 0...1
     var extra: SIMD4<Float>
 
     init() {
         p0 = .zero
         p1 = .zero
+        n0 = .zero
+        n1 = .zero
         extra = .zero
     }
 }

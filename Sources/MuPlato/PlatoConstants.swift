@@ -42,12 +42,12 @@ public enum Plato: Int { case
     Max
 }
 
-let 𝚽 : Double = (1 + sqrt(5)) / 2  // 1.6180… = 𝚽¹
-let φ : Double = 1 / 𝚽              // 0.6180… = 𝚽⁻¹
-let R : Double = sqrt(2 + 𝚽) * φ    // 1.175…  = √(2 + 𝚽) * 𝚽⁻¹
-let Rφ: Double = sqrt(2 + 𝚽) * φ*φ  // 0.726…  = √(2 + 𝚽) * 𝚽⁻²
+let 𝚽 : Float = (1 + sqrt(5)) / 2  // 1.6180… = 𝚽¹
+let φ : Float = 1 / 𝚽              // 0.6180… = 𝚽⁻¹
+let R : Float = sqrt(2 + 𝚽) * φ    // 1.175…  = √(2 + 𝚽) * 𝚽⁻¹
+let Rφ: Float = sqrt(2 + 𝚽) * φ*φ  // 0.726…  = √(2 + 𝚽) * 𝚽⁻²
 
-typealias Pnt = SIMD3<Double>
+typealias Pnt = SIMD3<Float>
 typealias Harmonic = Int
 typealias Pnt4 = SIMD4<Float>
 

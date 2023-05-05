@@ -8,8 +8,8 @@ import UIKit
 open class Platonic {
 
     var counter: PlatoCounter
-    var plaTrii: PlatoTris
-    var plaTriis = [PlatoTris]()
+    var platoTris: PlatoTris
+    var platoTriss = [PlatoTris]()
 
     var device: MTLDevice 
 
@@ -19,13 +19,9 @@ open class Platonic {
     let cameraFlo = CameraFlo.shared
     var platoPhase = CGPoint.zero
 
-    var platoColors = CGPoint.zero
-    var colorCount: Int { Int(platoColors.y) }
-    var colorStride: Int { Int(platoColors.x) }
-
     init(_ device: MTLDevice) {
 
-        self.plaTrii = PlatoTris([])
+        self.platoTris = PlatoTris([])
         self.device = device
         self.platoPhase = platoFlo.phase
         self.counter = PlatoCounter(8000, cameraFlo.stream, harmonic: 4)
@@ -47,11 +43,6 @@ open class Platonic {
             buildHarmonic()
             buildPhase()
 
-        } else  if platoColors != platoFlo.colors {
-
-            platoColors = platoFlo.colors
-            counter.next()
-
         } else if platoFlo.morph {
 
             counter.next()
@@ -68,13 +59,13 @@ open class Platonic {
         Tri01.reset()
         buildAll()
 
-        for phase in 0 ..< plaTriis.count {
-            let plaTrii = plaTriis[phase]
-            _ = plaTrii.trisect(counter.harmonic, harmonicSteps, phase)
+        for phase in 0 ..< platoTriss.count {
+            let plaTrii = platoTriss[phase]
+            _ = plaTrii.trisect(counter.harmonic)
         }
-        for i in 0 ..< plaTriis.count {
+        for i in 0 ..< platoTriss.count {
 
-            let plaTrii = plaTriis[i]
+            let plaTrii = platoTriss[i]
 
             logBuildCounter(i)
             for tri in plaTrii.tri01s {
@@ -84,8 +75,8 @@ open class Platonic {
     }
     func buildPhase() {
         logCounter()
-        plaTrii = plaTriis[counter.phase]
-        plaTrii.updateBuffers(device, counter, self)
+        platoTris = platoTriss[counter.phase]
+        platoTris.updateBuffers(device)
     }
     func logBuildCounter(_ i: Int) {
         //print("build phase: \(i) harmonic: \(counter.harmonic )")
@@ -93,9 +84,13 @@ open class Platonic {
     func logCounter() {
         print("phase: \(counter.phase)  harmonic: \(counter.harmonic) counter: \(counter.counter)  \(counter.increasing ? ">" : "<")")
     }
+    func updateHarmonif(_ harmonif: Float) {
+        platoTris.updateHarmonif(harmonif, device)
+        
+    }
     func ranges() -> vector_float4 {
         return vector_float4(counter.range01,
-                             Float(platoFlo.phase.y),
+                             Float(platoFlo.phase.y), // harmonif
                              Float(platoFlo.colors.x),
                              Float(platoFlo.colors.y))
     }
@@ -105,5 +100,4 @@ open class Platonic {
                              Float(platoFlo.invert),
                              Float(platoFlo.zoom))
     }
-
 }

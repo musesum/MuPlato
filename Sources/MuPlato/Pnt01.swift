@@ -37,7 +37,7 @@ struct Pnt01 {
         self.h = 0
     }
 
-    init(_ x: Double, _ y: Double, _ z: Double, _ p: Plato) {
+    init(_ x: Float, _ y: Float, _ z: Float, _ p: Plato) {
         self.p0 = Pnt(x,y,z)
         self.p1 = Pnt(x,y,z)
         self.id = p.rawValue
@@ -115,10 +115,9 @@ struct Pnt01 {
     }
 
     /// the Plato point have the same range where c.0 === c.1
-    init(_ m0: Pnt,_ m1: Pnt, harmonic h: Int, steps: Int) {
-        //??? let hh = Double(steps - h)/Double(steps)
-        self.p0 = m0 // * hh
-        self.p1 = m1 // * hh
+    init(_ m0: Pnt,_ m1: Pnt, harmonic h: Int) {
+        self.p0 = m0
+        self.p1 = m1
         self.id = Pnt01.nextId()
         self.h = h
     }

@@ -696,9 +696,9 @@ extension Platonic {
         }
     }
     func buildAll() {
-        plaTriis.removeAll()
+        platoTriss.removeAll()
         for phase in 0 ..< counter.phases {
-            plaTriis.append(buildPlatonic(phase))
+            platoTriss.append(buildPlatonic(phase))
         }
     }
 }

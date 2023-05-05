@@ -7,12 +7,19 @@ import MuMetal
 import simd
 
 struct PlatoUniforms {
+    static var size = 64
     var identity     : matrix_float4x4
     var inverse      : matrix_float4x4
     var projectModel : matrix_float4x4
     var worldCamera  : vector_float4
-    var range01      : vector_float4
-    var shadow       : vector_float4
+    var range        : Float
+    var harmonif     : Float
+    var colorCount   : Float
+    var colorMix     : Float
+    var shadowWhite  : Float
+    var shadowDepth  : Float
+    var invert       : Float
+    var zoom         : Float
 }
 
 enum PlatoStyle: Int {
@@ -36,6 +43,7 @@ public class MetNodePlato: MetNode {
     let platoFlo   = PlatoFlo.shared
     let cubeFlo    = CubeFlo.shared
     var platoStyle = PlatoStyle.reflect
+    var harmonif  = Float(1) // harmonic factor < 1 concave > 1 convex
 
     public var getPal: GetTextureFunc?
 
@@ -50,15 +58,17 @@ public class MetNodePlato: MetNode {
 
         makeLibrary()
         buildResources()
+        updateShader()
     }
     
     func buildResources() {
-        palSamplr = pipeline.makeSampler(normalized: true)
+
+        palSamplr = pipeline.makeSampler(normalized: false)
+
         uniformBuf = pipeline.device.makeBuffer(
             length: MemoryLayout<PlatoUniforms>.size * 2,
             options: .cpuCacheModeWriteCombined)!
     }
-
     func updateShader() {
 
         let vertexName = "plato"
@@ -97,6 +107,10 @@ public class MetNodePlato: MetNode {
     func updateUniforms() {
 
         guard let orientation = Motion.shared.sceneOrientation else { return }
+        if harmonif != platoFlo.harmonif {
+            harmonif = platoFlo.harmonif
+            platonic.updateHarmonif(harmonif)
+        }
         let perspective = pipeline.perspective()
         let cameraPosition = vector_float4([ 0, 0, -4 * Float(platoFlo.zoom), 1 ])
         let platoView = translation(cameraPosition) * orientation
@@ -104,12 +118,19 @@ public class MetNodePlato: MetNode {
         let projectModel = perspective * (platoView * identity)
 
         var platoUniforms = PlatoUniforms(
-            identity: identity,
-            inverse: identity.inverse.transpose,
-            projectModel: projectModel,
-            worldCamera: worldCamera,
-            range01: platonic.ranges(),
-            shadow: platonic.shadow())
+            identity     : identity,
+            inverse      : identity.inverse.transpose,
+            projectModel : projectModel,
+            worldCamera  : worldCamera,
+            range        : platonic.counter.range01,
+            harmonif     : platoFlo.harmonif,
+            colorCount   : platoFlo.colorCount,
+            colorMix     : platoFlo.colorMix,
+            shadowWhite  : platoFlo.shadowWhite,
+            shadowDepth  : platoFlo.shadowDepth,
+            invert       : platoFlo.invert,
+            zoom         : platoFlo.zoom)
+
 
         let uniformLen = MemoryLayout<PlatoUniforms>.stride
         memcpy(uniformBuf.contents() + uniformLen, &platoUniforms, uniformLen)
@@ -117,7 +138,7 @@ public class MetNodePlato: MetNode {
 
     override public func renderCommand(_ renderEnc: MTLRenderCommandEncoder) {
 
-        guard let indexBuf = platonic.plaTrii.indexBuf else { return }
+        guard let indexBuf = platonic.platoTris.indexBuf else { return }
         
         let uniformLen = MemoryLayout<PlatoUniforms>.size
         let indexCount = indexBuf.length / MemoryLayout<UInt32>.stride
@@ -126,9 +147,9 @@ public class MetNodePlato: MetNode {
         renderEnc.setRenderPipelineState(renderState)
         renderEnc.setDepthStencilState(pipeline.depthStencil(write: true))
         
-        renderEnc.setVertexBuffer(platonic.plaTrii.vertexBuf, offset: 0, index: 0)
+        renderEnc.setVertexBuffer(platonic.platoTris.vertexBuf, offset: 0, index: 0)
         renderEnc.setVertexBuffer(uniformBuf, offset: uniformLen, index: 1)
-        renderEnc.setFragmentBuffer(uniformBuf, offset: uniformLen, index: 0)
+        renderEnc.setFragmentBuffer(uniformBuf, offset: uniformLen, index: 1)
 
         guard let cubeNode   = pipeline.cubemapNode else { return }
         guard let cubeTex    = cubeNode.cubeTex else { return }
@@ -144,20 +165,23 @@ public class MetNodePlato: MetNode {
         guard let altTex else { return }
         renderEnc.setFragmentTexture(altTex, index: 2)
         renderEnc.setFragmentSamplerState(palSamplr, index: 2)
-        
+        #if true
+        renderEnc.drawPrimitives(type: .triangle,
+                                 vertexStart: 0,
+                                 vertexCount: indexCount)
+        #else
         renderEnc.drawIndexedPrimitives(
             type              : .triangle,
             indexCount        : indexCount,
             indexType         : .uint32,
             indexBuffer       : indexBuf,
             indexBufferOffset : 0)
-
+        #endif
         platonic.nextCounter()
     }
 
     override public func setupInOutTextures(via: String) {
 
-        updateShader()
         updateUniforms()
         altTex = altTex ?? makePaletteTex() // 256 false color palette
 
@@ -169,7 +193,10 @@ public class MetNodePlato: MetNode {
             let palRegion = MTLRegionMake3D(0, 0, 0, palSize, 1, 1)
             let bytesPerRow = palSize * pixSize
             let palBytes = getPal(palSize)
-            altTex.replace(region: palRegion, mipmapLevel: 0, withBytes: palBytes, bytesPerRow: bytesPerRow)
+            altTex.replace(region: palRegion,
+                           mipmapLevel: 0,
+                           withBytes: palBytes,
+                           bytesPerRow: bytesPerRow)
         }
         func makePaletteTex() -> MTLTexture? {
 
@@ -180,9 +207,9 @@ public class MetNodePlato: MetNode {
             return paletteTex
         }
         if let cubeNode = inNode as? MetNodeCubemap {
-            inTex = cubeNode.cubeTex //??
+            inTex = cubeNode.cubeTex
         } else {
-            inTex = inNode?.outTex //??
+            inTex = inNode?.outTex\
         }
         
     }

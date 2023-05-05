@@ -133,7 +133,7 @@ class Tri01 {
         return hasher.finalize()
     }
     /// area of triangle at lowerbound of range 0...1
-    func area(_ i: Int) -> Double {
+    func area(_ i: Int) -> Float {
         let v0_ = (i == 0) ? v0.p0 : v0.p1
         let v1_ = (i == 0) ? v1.p0 : v1.p1
         let v2_ = (i == 0) ? v2.p0 : v2.p1
