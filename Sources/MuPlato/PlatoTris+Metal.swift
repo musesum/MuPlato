@@ -54,7 +54,6 @@ extension PlatoTris {
             vertices[vi-3].n1 = n1
             vertices[vi-2].n1 = n1
             vertices[vi-1].n1 = n1
-
         }
         let verticesLen = MemoryLayout<Vert01>.size * vertexCount
         let indicesLen = MemoryLayout<UInt32>.size * indexCount

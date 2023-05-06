@@ -209,7 +209,7 @@ public class MetNodePlato: MetNode {
         if let cubeNode = inNode as? MetNodeCubemap {
             inTex = cubeNode.cubeTex
         } else {
-            inTex = inNode?.outTex\
+            inTex = inNode?.outTex
         }
         
     }
