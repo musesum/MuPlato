@@ -1,12 +1,21 @@
 {
   "pins" : [
     {
+      "identity" : "mucolor",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/musesum/MuColor.git",
+      "state" : {
+        "revision" : "f84e38ee1d2d5c42ea27ad1732596503dc2f5011",
+        "version" : "0.23.428"
+      }
+    },
+    {
       "identity" : "muflo",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/musesum/MuFlo.git",
       "state" : {
-        "revision" : "cc8d22b6395fb1c5721fe3ee2e87d9fb50a11b82",
-        "version" : "0.23.203"
+        "revision" : "b5e96a58dbe45cc0f1406419ff038bc23f20350a",
+        "version" : "0.23.428"
       }
     },
     {
@@ -14,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/musesum/MuMetal.git",
       "state" : {
-        "revision" : "ef0571d492a8079e7ff304ab12032e0826d6bf93",
-        "version" : "0.23.409"
+        "revision" : "29c22267720655e77d221d08d12fd86c09771760",
+        "version" : "0.23.428"
       }
     },
     {
@@ -32,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/musesum/MuSkyFlo.git",
       "state" : {
-        "revision" : "a1434a95ddb74b561b60b7acdace095ed381eef9",
-        "version" : "0.23.203"
+        "revision" : "fec2a7e6fbf84d25398e3fe70bfce04b2f1e0a16",
+        "version" : "0.23.409"
       }
     },
     {
