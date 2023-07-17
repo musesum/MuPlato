@@ -21,6 +21,7 @@ class MetDisplayLink {
 
     /// not used, right now
     func addDisplayLink() {
+        //link = UIScreen.main.displayLink(withTarget: self, selector: #selector(displayLinkDidFire))
         link = UIScreen.main.displayLink(withTarget: self, selector: #selector(displayLinkDidFire))
         link?.preferredFramesPerSecond = fps
         link?.add(to: RunLoop.current, forMode: .default)
