@@ -30,7 +30,7 @@ class PlatoCounter {
     init(_ counter: Int, _ viaFrame: Bool, harmonic: Int = 0) {
         self.counter = counter
         self.harmonic = harmonic
-        self.steps = viaFrame ? 60 : 100
+        self.steps = viaFrame ? 120 : 200
 
         phaseMod = phases * 2
         harmoDiv = steps * phaseMod

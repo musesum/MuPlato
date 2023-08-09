@@ -131,7 +131,6 @@ public class MetNodePlato: MetNode {
             invert       : platoFlo.invert,
             zoom         : platoFlo.zoom)
 
-
         let uniformLen = MemoryLayout<PlatoUniforms>.stride
         memcpy(uniformBuf.contents() + uniformLen, &platoUniforms, uniformLen)
     }

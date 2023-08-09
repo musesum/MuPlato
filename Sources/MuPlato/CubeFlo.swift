@@ -7,10 +7,10 @@ open class CubeFlo {
 
     static public let shared = CubeFlo()
 
-    private var motion˚ : Flo? ; var motion  = false
-    private var rotate˚ : Flo? ; var rotate  = CGPoint.zero
-    private var back˚   : Flo? ; var back  = true
-    private var show˚   : Flo? ; var show  = true
+    private var motion˚ : Flo? ; var motion = false
+    private var rotate˚ : Flo? ; var rotate = CGPoint.zero
+    private var back˚   : Flo? ; var back   = true
+    private var show˚   : Flo? ; var show   = true
 
     init() {
         let cube = Flo.root˚.bind("model.canvas.cube")
@@ -20,4 +20,3 @@ open class CubeFlo {
         show˚   = cube.bind("show"   ) { f,_ in self.show   = f.bool }
     }
 }
-

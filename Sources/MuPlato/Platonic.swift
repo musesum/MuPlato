@@ -13,7 +13,7 @@ open class Platonic {
 
     var device: MTLDevice 
 
-    var harmonicSteps = 500
+    //var harmonicSteps = 1000
 
     let platoFlo = PlatoFlo.shared
     let cameraFlo = CameraFlo.shared
