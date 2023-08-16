@@ -26,11 +26,13 @@ public struct PlatoOps: OptionSet {
     var hasCube: Bool { get {
         return showCube || reflectCube
     }}
+    #if os(xrOS)
+    #else
     var cameraPosition: AVCaptureDevice.Position { get {
         cameraBack ? .back :
         cameraFront ? .front : .unspecified
     }}
-
+    #endif
     public var showPlato   : Bool { get { contains(.showPlato  )}}
     public var showCube    : Bool { get { contains(.showCube   )}}
     public var reflectCube : Bool { get { contains(.reflectCube)}}

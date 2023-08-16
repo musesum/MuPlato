@@ -17,7 +17,10 @@ open class PlatoPipeline: MetPipeline {
     var platonic: Platonic!
 
     var motion: Motion?
+    #if os(xrOS)
+    #else
     var facePose: MetFacePose!
+    #endif
     var displayLink: MetDisplayLink!
 
     let cameraFlo = CameraFlo.shared
@@ -55,11 +58,12 @@ open class PlatoPipeline: MetPipeline {
         if platoFlo.show {
             platoNode = MetNodePlato(self, colorFlo.getMix)
         }
-
+        #if os(xrOS)
+        #else
         cameraNode?.setMetalNodeOn(true) {
             MetCamera.shared.startCamera()
         }
-
+        #endif
         displayLink = MetDisplayLink(self, fps: 60)
 
         settingUp = false
@@ -73,7 +77,8 @@ open class PlatoPipeline: MetPipeline {
         }
     }
 }
-
+#if os(xrOS)
+#else
 extension PlatoPipeline: MetFacePoseDelegate {
 
     public func didUpdate(_ ciImage: CIImage) {
@@ -82,13 +87,13 @@ extension PlatoPipeline: MetFacePoseDelegate {
         didFire()
     }
 }
-
+#endif
 extension PlatoPipeline: MetDisplayLinkFire {
 
     func didFire() {
         if settingUp { return }
         motion?.updateDeviceOrientation()
-        mtkView.draw()
+        draw()
     }
 
 }

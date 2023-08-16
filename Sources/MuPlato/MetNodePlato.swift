@@ -7,11 +7,6 @@ import MuMetal
 import simd
 
 struct PlatoUniforms {
-    static var size = 64
-    var identity     : matrix_float4x4
-    var inverse      : matrix_float4x4
-    var projectModel : matrix_float4x4
-    var worldCamera  : vector_float4
     var range        : Float
     var harmonif     : Float
     var colorCount   : Float
@@ -20,6 +15,12 @@ struct PlatoUniforms {
     var shadowDepth  : Float
     var invert       : Float
     var zoom         : Float
+    var extra        : vector_float4
+    var worldCamera  : vector_float4
+    var identity     : matrix_float4x4
+    var inverse      : matrix_float4x4
+    var projectModel : matrix_float4x4
+
 }
 
 enum PlatoStyle: Int {
@@ -43,7 +44,7 @@ public class MetNodePlato: MetNode {
     let platoFlo   = PlatoFlo.shared
     let cubeFlo    = CubeFlo.shared
     var platoStyle = PlatoStyle.reflect
-    var harmonif  = Float(1) // harmonic factor < 1 concave > 1 convex
+    var harmonif   = Float(1) // harmonic factor < 1 concave > 1 convex
 
     public var getPal: GetTextureFunc?
 
@@ -118,10 +119,6 @@ public class MetNodePlato: MetNode {
         let projectModel = perspective * (platoView * identity)
 
         var platoUniforms = PlatoUniforms(
-            identity     : identity,
-            inverse      : identity.inverse.transpose,
-            projectModel : projectModel,
-            worldCamera  : worldCamera,
             range        : platonic.counter.range01,
             harmonif     : platoFlo.harmonif,
             colorCount   : platoFlo.colorCount,
@@ -129,7 +126,13 @@ public class MetNodePlato: MetNode {
             shadowWhite  : platoFlo.shadowWhite,
             shadowDepth  : platoFlo.shadowDepth,
             invert       : platoFlo.invert,
-            zoom         : platoFlo.zoom)
+            zoom         : platoFlo.zoom,
+            extra        : worldCamera,
+            worldCamera  : worldCamera,
+            identity     : identity,
+            inverse      : identity.inverse.transpose,
+            projectModel : projectModel
+            )
 
         let uniformLen = MemoryLayout<PlatoUniforms>.stride
         memcpy(uniformBuf.contents() + uniformLen, &platoUniforms, uniformLen)

@@ -1,30 +1,12 @@
 {
   "pins" : [
     {
-      "identity" : "mucolor",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/musesum/MuColor.git",
-      "state" : {
-        "revision" : "ad7de3a382522e136cae4e6397209a1c39b03fc7",
-        "version" : "0.23.811"
-      }
-    },
-    {
       "identity" : "muflo",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/musesum/MuFlo.git",
       "state" : {
         "revision" : "214e6f72052b8a29fb5711e80e1a0a0f67a0d9aa",
         "version" : "0.23.811"
-      }
-    },
-    {
-      "identity" : "mumetal",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/musesum/MuMetal.git",
-      "state" : {
-        "revision" : "7d08015b837f879e46aff06f98f7cd391a662d09",
-        "version" : "0.23.717"
       }
     },
     {
