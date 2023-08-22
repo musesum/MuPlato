@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/musesum/MuMetal.git",
       "state" : {
-        "revision" : "7d08015b837f879e46aff06f98f7cd391a662d09",
-        "version" : "0.23.717"
+        "revision" : "130805fc2c9454181a5eac7adae37d4c6c47d700",
+        "version" : "0.23.819"
       }
     },
     {

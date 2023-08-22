@@ -10,8 +10,6 @@ import simd
 
 open class PlatoPipeline: MetPipeline {
 
-    public static var shared = PlatoPipeline()
-    
     var platoNode: MetNode!    
     var cameraNode: MetNode!
     var platonic: Platonic!
@@ -28,8 +26,8 @@ open class PlatoPipeline: MetPipeline {
     let platoFlo = PlatoFlo.shared
     private var colorFlo = ColorFlo(Flo.root˚)
 
-    override public init() {
-        super.init()
+    override public init(_ bounds: CGRect) {
+        super.init(bounds)
         motion = Motion.shared
         platonic = Platonic(device)
         setupPipeline()
