@@ -30,12 +30,12 @@ open class PlatoPipeline: MetPipeline {
         super.init(bounds)
         motion = Motion.shared
         platonic = Platonic(device)
-        setupPipeline()
+        //??? setupPipeline()
     }
 
-    public override func setupPipeline() {
+    public func setupPipeline(_ root˚: Flo) {
 
-        metalLayer.pixelFormat = .bgra8Unorm // was bgr10_xr
+        metalLayer.pixelFormat = .bgra8Unorm
         metalLayer.framebufferOnly = true
 
         if cameraFlo.stream {
