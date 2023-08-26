@@ -30,7 +30,7 @@ open class PlatoPipeline: MetPipeline {
         super.init(bounds)
         motion = Motion.shared
         platonic = Platonic(device)
-        //??? setupPipeline()
+        setupPipeline(Flo.root˚)
     }
 
     public func setupPipeline(_ root˚: Flo) {
