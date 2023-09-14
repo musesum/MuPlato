@@ -2,7 +2,6 @@
 
 import AVFoundation
 import CoreMedia
-import MuTime // NextFrame
 import MuFlo
 
 open class PlatoFlo {
