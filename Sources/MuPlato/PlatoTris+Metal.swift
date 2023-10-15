@@ -1,13 +1,10 @@
-//  Created by warren on 2/22/23.
-//  Copyright © 2023 com.deepmuse. All rights reserved.
+//  created by musesum on 2/22/23.
 
 import Foundation
 import Metal
 import Vision
 import UIKit
 import simd
-
-
 
 extension PlatoTris {
 

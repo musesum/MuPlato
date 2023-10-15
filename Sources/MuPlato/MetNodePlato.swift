@@ -1,4 +1,4 @@
-//  Created by warren on 3/16/23.
+//  created by musesum on 3/16/23.
 
 import Foundation
 import QuartzCore
@@ -35,14 +35,14 @@ enum PlatoStyle: Int {
 
 public class MetNodePlato: MetNode {
 
-    var renderState: MTLRenderPipelineState!
-    var uniformBuf: MTLBuffer!
+    var renderState : MTLRenderPipelineState!
+    var uniformBuf  : MTLBuffer!
+    let platonic    : Platonic
 
-    let platonic: Platonic
-    let platoFlo   = PlatoFlo.shared
-    let cubeFlo    = CubeFlo.shared
-    var platoStyle = PlatoStyle.reflect
-    var harmonif   = Float(1) // harmonic factor < 1 concave > 1 convex
+    let platoFlo    = PlatoFlo.shared
+    let cubeFlo     = CubeFlo.shared
+    var platoStyle  = PlatoStyle.reflect
+    var harmonif    = Float(0.95) // < 1 concave, > 1 convex
 
     public var getPal: GetTextureFunc?
 

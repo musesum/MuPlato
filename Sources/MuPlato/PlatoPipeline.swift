@@ -1,5 +1,4 @@
-//  Created by warren on 3/14/23.
-//  Copyright © 2023 com.deepmuse. All rights reserved.
+//  created by musesum on 3/14/23.
 
 import UIKit
 import Metal
@@ -39,7 +38,7 @@ open class PlatoPipeline: MetPipeline {
         metalLayer.framebufferOnly = true
 
         if cameraFlo.stream {
-            cameraNode = MetNodeCamera(self, "camera", "compute.camera")
+            cameraNode = MetNodeCamera(root˚, self, "camera", "compute.camera")
             //?? nodes.append(cameraNode)
         }
         if cubeFlo.back {
