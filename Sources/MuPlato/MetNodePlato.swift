@@ -15,12 +15,11 @@ struct PlatoUniforms {
     var shadowDepth  : Float
     var invert       : Float
     var zoom         : Float
-    var extra        : vector_float4
     var worldCamera  : vector_float4
     var identity     : matrix_float4x4
     var inverse      : matrix_float4x4
     var projectModel : matrix_float4x4
-
+    var pad256bytes  : vector_float4 = .zero
 }
 
 enum PlatoStyle: Int {
@@ -37,7 +36,6 @@ enum PlatoStyle: Int {
 public class MetNodePlato: MetNode {
 
     var renderState: MTLRenderPipelineState!
-    var palSamplr: MTLSamplerState!
     var uniformBuf: MTLBuffer!
 
     let platonic: Platonic
@@ -58,13 +56,11 @@ public class MetNodePlato: MetNode {
         self.getPal = getPal
 
         makeLibrary()
-        buildResources()
+        makeResources()
         updateShader()
     }
     
-    func buildResources() {
-
-        palSamplr = pipeline.makeSampler(normalized: false)
+    func makeResources() {
 
         uniformBuf = pipeline.device.makeBuffer(
             length: MemoryLayout<PlatoUniforms>.size * 2,
@@ -72,26 +68,26 @@ public class MetNodePlato: MetNode {
     }
     func updateShader() {
 
-        let vertexName = "plato"
+        let vertexName = "vertexPlato"
 
         let fragmentName: String
         switch platoStyle {
-            case .color:    fragmentName = "platoCubeColor"
-            case .reflect:  fragmentName = "platoCubeIndex"
-            default:        fragmentName = "platoColor"
+            case .color:    fragmentName = "fragmentPlatoCubeColor"
+            case .reflect:  fragmentName = "fragmentPlatoCubeIndex"
+            default:        fragmentName = "fragmentPlatoColor"
         }
 
         let vd = MTLVertexDescriptor()
         var offset = 0
 
-        for i in 0 ..< Vert01.count {
+        for i in 0 ..< PlatoVertex.count {
             vd.attributes[i].bufferIndex = 0
             vd.attributes[i].offset = offset
             vd.attributes[i].format = .float4
             offset += MemoryLayout<vector_float4>.size
         }
         vd.layouts[0].stepFunction = .perVertex
-        vd.layouts[0].stride = MemoryLayout<Vert01>.size
+        vd.layouts[0].stride = MemoryLayout<PlatoVertex>.size
         
         let pd = MTLRenderPipelineDescriptor()
         pd.vertexFunction   = library.makeFunction(name: vertexName)
@@ -127,7 +123,7 @@ public class MetNodePlato: MetNode {
             shadowDepth  : platoFlo.shadowDepth,
             invert       : platoFlo.invert,
             zoom         : platoFlo.zoom,
-            extra        : worldCamera,
+
             worldCamera  : worldCamera,
             identity     : identity,
             inverse      : identity.inverse.transpose,
@@ -153,20 +149,15 @@ public class MetNodePlato: MetNode {
         renderEnc.setVertexBuffer(uniformBuf, offset: uniformLen, index: 1)
         renderEnc.setFragmentBuffer(uniformBuf, offset: uniformLen, index: 1)
 
-        guard let cubeNode   = pipeline.cubemapNode else { return }
-        guard let cubeTex    = cubeNode.cubeTex else { return }
-        guard let cubeSamplr = cubeNode.cubeSamplr else { return }
-        renderEnc.setFragmentTexture(cubeTex, index: 0)
-        renderEnc.setFragmentSamplerState(cubeSamplr, index: 0)
+        guard let cubeNode = pipeline.cubemapNode else { return }
+        guard let cubeTex = cubeNode.cubeTex else { return }
+        guard let inTex = cubeNode.inTex else { return }
 
-        guard let inTex    = cubeNode.inTex    else { return }
-        guard let inSamplr = cubeNode.inSamplr else { return }
+        renderEnc.setFragmentTexture(cubeTex, index: 0)
         renderEnc.setFragmentTexture(inTex, index: 1)
-        renderEnc.setFragmentSamplerState(inSamplr, index: 1)
 
         guard let altTex else { return }
         renderEnc.setFragmentTexture(altTex, index: 2)
-        renderEnc.setFragmentSamplerState(palSamplr, index: 2)
         #if true
         renderEnc.drawPrimitives(type: .triangle,
                                  vertexStart: 0,
@@ -182,7 +173,7 @@ public class MetNodePlato: MetNode {
         platonic.nextCounter()
     }
 
-    override public func setupInOutTextures(via: String) {
+    override public func updateTextures(via: String) {
 
         updateUniforms()
         altTex = altTex ?? makePaletteTex() // 256 false color palette

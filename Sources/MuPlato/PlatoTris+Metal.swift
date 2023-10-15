@@ -16,7 +16,7 @@ extension PlatoTris {
         let vertexCount = tri01s.count*3
         let indexCount = tri01s.count*3
 
-        var vertices = [Vert01](repeating: Vert01(), count: vertexCount)
+        var vertices = [PlatoVertex](repeating: PlatoVertex(), count: vertexCount)
         var indices =  [UInt32](repeating:        0, count: indexCount)
         var vi = 0
         
@@ -24,15 +24,15 @@ extension PlatoTris {
 
         for tri in tri01s {
 
-            for v in [tri.v0, tri.v1, tri.v2] {
+            for vert in [tri.v0, tri.v1, tri.v2] {
 
-                let harmonic = Float(v.h)
+                let harmonic = Float(vert.h)
                 let convex = pow(PlatoFlo.shared.harmonif,harmonic)
-                vertices[vi].p0 = pnt4f(v.p0, 1) * convex
-                vertices[vi].p1 = pnt4f(v.p1, 1) * convex
-                vertices[vi].extra.x = Float(v.id)   // vertId
-                vertices[vi].extra.y = Float(tri.id)  // faceId
-                vertices[vi].extra.z = Float(v.h)    // harmonic
+                vertices[vi].pos0 = pnt4f(vert.p0, 1) * convex
+                vertices[vi].pos1 = pnt4f(vert.p1, 1) * convex
+                vertices[vi].vertId = Float(vert.id)   
+                vertices[vi].faceId = Float(tri.id)
+                vertices[vi].harmonic = Float(vert.h)
 
                 indices[vi] = UInt32(vi)
                 if PlatoTris.logVertex {
@@ -41,21 +41,21 @@ extension PlatoTris {
                 vi += 1
             }
 
-            let n0 = normalize(vertices[vi-3].p0.xyz,
-                               vertices[vi-2].p0.xyz,
-                               vertices[vi-1].p0.xyz)
-            vertices[vi-3].n0 = n0
-            vertices[vi-2].n0 = n0
-            vertices[vi-1].n0 = n0
+            let n0 = normalize(vertices[vi-3].pos0.xyz,
+                               vertices[vi-2].pos0.xyz,
+                               vertices[vi-1].pos0.xyz)
+            vertices[vi-3].norm0 = n0
+            vertices[vi-2].norm0 = n0
+            vertices[vi-1].norm0 = n0
 
-            let n1 = normalize(vertices[vi-3].p1.xyz,
-                               vertices[vi-2].p1.xyz,
-                               vertices[vi-1].p1.xyz)
-            vertices[vi-3].n1 = n1
-            vertices[vi-2].n1 = n1
-            vertices[vi-1].n1 = n1
+            let n1 = normalize(vertices[vi-3].pos1.xyz,
+                               vertices[vi-2].pos1.xyz,
+                               vertices[vi-1].pos1.xyz)
+            vertices[vi-3].norm1 = n1
+            vertices[vi-2].norm1 = n1
+            vertices[vi-1].norm1 = n1
         }
-        let verticesLen = MemoryLayout<Vert01>.size * vertexCount
+        let verticesLen = MemoryLayout<PlatoVertex>.size * vertexCount
         let indicesLen = MemoryLayout<UInt32>.size * indexCount
         vertexBuf = device.makeBuffer(bytes: vertices, length: verticesLen)
         indexBuf  = device.makeBuffer(bytes: indices , length: indicesLen)

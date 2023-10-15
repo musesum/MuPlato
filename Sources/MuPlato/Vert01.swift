@@ -5,39 +5,45 @@ import Foundation
 
 // index ranged  0...1
 
-struct Vert01 {
+struct PlatoVertex {
     static let count = 5 // used by updateShader to set stride
-    var p0: SIMD4<Float> // position at lower bound 0...1
-    var p1: SIMD4<Float> // position at upper bound 0...1
-    var n0: SIMD4<Float> // normal at lower bound 0...1
-    var n1: SIMD4<Float> // normal at upper bound 0...1
-    var extra: SIMD4<Float>
+    var pos0: SIMD4<Float> // position at lower bound 0...1
+    var pos1: SIMD4<Float> // position at upper bound 0...1
+    var norm0: SIMD4<Float> // normal at lower bound 0...1
+    var norm1: SIMD4<Float> // normal at upper bound 0...1
+    var vertId: Float
+    var faceId: Float
+    var harmonic: Float
+    var reserved: Float
 
     init() {
-        p0 = .zero
-        p1 = .zero
-        n0 = .zero
-        n1 = .zero
-        extra = .zero
+        pos0 = .zero
+        pos1 = .zero
+        norm0 = .zero
+        norm1 = .zero
+        vertId = 0
+        faceId = 0
+        harmonic = 0
+        reserved = 0
     }
 }
 
-func logVert01(_ v: Vert01,_ i: Int, normals: Bool = false) {
+func logVert01(_ v: PlatoVertex,_ i: Int, normals: Bool = false) {
     var str = "\(i): "
 
-    str += "(\(s(v.p0.x)),\(s(v.p0.y)),\(s(v.p0.z)))…"
-    str += "(\(s(v.p1.x)),\(s(v.p1.y)),\(s(v.p1.z)))  "
+    str += "(\(s(v.pos0.x)),\(s(v.pos0.y)),\(s(v.pos0.z)))…"
+    str += "(\(s(v.pos1.x)),\(s(v.pos1.y)),\(s(v.pos1.z)))  "
 
-    let vertId = Int(v.extra.x)
-    let triId = Int(v.extra.y)
-    let harmonic = Int(v.extra.z)
+    let vertId = Int(v.vertId)
+    let faceId = Int(v.faceId)
+    let harmonic = Int(v.harmonic)
     let hStr = harmonic > 0 ? "h:\(harmonic)" : ""
 
 
     if let plato = Plato(rawValue: vertId) {
-        str += "t:\(triId) p:\(plato) h:\(harmonic)"
+        str += "f:\(faceId) p:\(plato) h:\(harmonic)"
     } else {
-        str +=  "t:\(triId) v:\(vertId) \(hStr)"
+        str +=  "f:\(faceId) v:\(vertId) \(hStr)"
     }
     print(str)
 
