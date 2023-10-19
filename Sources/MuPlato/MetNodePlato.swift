@@ -15,10 +15,12 @@ struct PlatoUniforms {
     var shadowDepth  : Float
     var invert       : Float
     var zoom         : Float
+
+    var projectModel : matrix_float4x4
     var worldCamera  : vector_float4
     var identity     : matrix_float4x4
     var inverse      : matrix_float4x4
-    var projectModel : matrix_float4x4
+
     var pad256bytes  : vector_float4 = .zero
 }
 
@@ -124,11 +126,10 @@ public class MetNodePlato: MetNode {
             invert       : platoFlo.invert,
             zoom         : platoFlo.zoom,
 
+            projectModel : projectModel,
             worldCamera  : worldCamera,
             identity     : identity,
-            inverse      : identity.inverse.transpose,
-            projectModel : projectModel
-            )
+            inverse      : identity.inverse.transpose)
 
         let uniformLen = MemoryLayout<PlatoUniforms>.stride
         memcpy(uniformBuf.contents() + uniformLen, &platoUniforms, uniformLen)
