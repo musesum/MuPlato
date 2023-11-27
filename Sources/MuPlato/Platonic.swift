@@ -88,12 +88,6 @@ open class Platonic {
         platoTris.updateHarmonif(harmonif, device)
         
     }
-    func ranges() -> vector_float4 {
-        return vector_float4(counter.range01,
-                             Float(platoFlo.phase.y), // harmonif
-                             Float(platoFlo.colors.x),
-                             Float(platoFlo.colors.y))
-    }
     func shadow() -> vector_float4 {
         return vector_float4(Float(platoFlo.shadow.x),
                              Float(platoFlo.shadow.y),

@@ -9,8 +9,7 @@ import simd
 struct PlatoUniforms {
     var range        : Float
     var harmonif     : Float
-    var colorCount   : Float
-    var colorMix     : Float
+    var passthru     : Float
     var shadowWhite  : Float
     var shadowDepth  : Float
     var invert       : Float
@@ -119,8 +118,7 @@ public class MetNodePlato: MetNode {
         var platoUniforms = PlatoUniforms(
             range        : platonic.counter.range01,
             harmonif     : platoFlo.harmonif,
-            colorCount   : platoFlo.colorCount,
-            colorMix     : platoFlo.colorMix,
+            passthru     : platoFlo.passthru,
             shadowWhite  : platoFlo.shadowWhite,
             shadowDepth  : platoFlo.shadowDepth,
             invert       : platoFlo.invert,
