@@ -25,7 +25,7 @@ public struct PlatoOps: OptionSet {
     var hasCube: Bool { get {
         return showCube || reflectCube
     }}
-    #if os(xrOS)
+    #if os(visionOS)
     #else
     var cameraPosition: AVCaptureDevice.Position { get {
         cameraBack ? .back :

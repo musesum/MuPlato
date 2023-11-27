@@ -14,7 +14,7 @@ open class PlatoPipeline: MetPipeline {
     var platonic: Platonic!
 
     var motion: Motion?
-    #if os(xrOS)
+    #if os(visionOS)
     #else
     var facePose: MetFacePose!
     #endif
@@ -55,7 +55,7 @@ open class PlatoPipeline: MetPipeline {
         if platoFlo.show {
             platoNode = MetNodePlato(self, colorFlo.getMix)
         }
-        #if os(xrOS)
+        #if os(visionOS)
         #else
         cameraNode?.setMetalNodeOn(true) {
             MetCamera.shared.startCamera()
@@ -74,7 +74,7 @@ open class PlatoPipeline: MetPipeline {
         }
     }
 }
-#if os(xrOS)
+#if os(visionOS)
 #else
 extension PlatoPipeline: MetFacePoseDelegate {
 

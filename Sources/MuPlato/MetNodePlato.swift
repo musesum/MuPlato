@@ -51,9 +51,9 @@ public class MetNodePlato: MetNode {
     public init(_ pipeline: MetPipeline,
                 _ getPal: @escaping GetTextureFunc) {
 
-        self.platonic = ((pipeline as? PlatoPipeline)?.platonic
-                         ?? Platonic(pipeline.device))
-        super.init(pipeline, "plato", "render.plato", .render)
+        self.platonic = ((pipeline as? PlatoPipeline)?
+            .platonic ?? Platonic(pipeline.device))
+        super.init(pipeline, "plato", "render.plato", .rendering)
         self.filename = filename
         self.getPal = getPal
 
