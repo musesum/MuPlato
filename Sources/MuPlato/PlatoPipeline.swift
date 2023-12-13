@@ -90,7 +90,7 @@ extension PlatoPipeline: MetDisplayLinkFire {
     func didFire() {
         if settingUp { return }
         motion?.updateDeviceOrientation()
-        draw()
+        drawNodes()
     }
 
 }

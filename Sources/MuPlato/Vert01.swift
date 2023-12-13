@@ -5,7 +5,7 @@ import Foundation
 // index ranged  0...1
 
 struct PlatoVertex {
-    static let count = 5 // used by updateShader to set stride
+    static let count = 5 // used by makePipeline to set stride
     var pos0: SIMD4<Float> // position at lower bound 0...1
     var pos1: SIMD4<Float> // position at upper bound 0...1
     var norm0: SIMD4<Float> // normal at lower bound 0...1

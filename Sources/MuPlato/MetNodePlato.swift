@@ -34,16 +34,15 @@ enum PlatoStyle: Int {
     }
 }
 
-public class MetNodePlato: MetNode {
+public class MetNodePlato: MetNodeRender {
 
-    var renderState : MTLRenderPipelineState!
-    var uniformBuf  : MTLBuffer!
-    let platonic    : Platonic
+    var uniformBuf : MTLBuffer!
+    let platonic   : Platonic
 
-    let platoFlo    = PlatoFlo.shared
-    let cubeFlo     = CubeFlo.shared
-    var platoStyle  = PlatoStyle.reflect
-    var harmonif    = Float(0.95) // < 1 concave, > 1 convex
+    let platoFlo   = PlatoFlo.shared
+    let cubeFlo    = CubeFlo.shared
+    var platoStyle = PlatoStyle.reflect
+    var harmonif   = Float(0.95) // < 1 concave, > 1 convex
 
     public var getPal: GetTextureFunc?
 
@@ -52,13 +51,14 @@ public class MetNodePlato: MetNode {
 
         self.platonic = ((pipeline as? PlatoPipeline)?
             .platonic ?? Platonic(pipeline.device))
+
         super.init(pipeline, "plato", "render.plato", .rendering)
         self.filename = filename
         self.getPal = getPal
 
         makeLibrary()
         makeResources()
-        updateShader()
+        makePipeline()
     }
     
     func makeResources() {
@@ -67,17 +67,16 @@ public class MetNodePlato: MetNode {
             length: MemoryLayout<PlatoUniforms>.size * 2,
             options: .cpuCacheModeWriteCombined)!
     }
-    func updateShader() {
+    func makePipeline() {
 
         let vertexName = "vertexPlato"
-
         let fragmentName: String
         switch platoStyle {
-            case .color:    fragmentName = "fragmentPlatoCubeColor"
-            case .reflect:  fragmentName = "fragmentPlatoCubeIndex"
-            default:        fragmentName = "fragmentPlatoColor"
+        case .color:    fragmentName = "fragmentPlatoCubeColor"
+        case .reflect:  fragmentName = "fragmentPlatoCubeIndex"
+        default:        fragmentName = "fragmentPlatoColor"
         }
-
+        
         let vd = MTLVertexDescriptor()
         var offset = 0
 
@@ -89,7 +88,7 @@ public class MetNodePlato: MetNode {
         }
         vd.layouts[0].stepFunction = .perVertex
         vd.layouts[0].stride = MemoryLayout<PlatoVertex>.size
-        
+
         let pd = MTLRenderPipelineDescriptor()
         pd.vertexFunction   = library.makeFunction(name: vertexName)
         pd.fragmentFunction = library.makeFunction(name: fragmentName)
@@ -97,11 +96,11 @@ public class MetNodePlato: MetNode {
 
         pd.colorAttachments[0].pixelFormat = .bgra8Unorm
         pd.depthAttachmentPixelFormat = .depth32Float
-        
-        do { renderState = try pipeline.device.makeRenderPipelineState(descriptor: pd) }
+
+        do { renderPipe = try pipeline.device.makeRenderPipelineState(descriptor: pd) }
         catch { print("⁉️ \(#function) failed to create \(name), error \(error)") }
     }
-
+    
     func updateUniforms() {
 
         guard let orientation = Motion.shared.sceneOrientation else { return }
@@ -133,37 +132,35 @@ public class MetNodePlato: MetNode {
         memcpy(uniformBuf.contents() + uniformLen, &platoUniforms, uniformLen)
     }
 
-    override public func renderCommand(_ renderEnc: MTLRenderCommandEncoder) {
+    override public func renderNode(_ renderCmd: MTLRenderCommandEncoder) {
 
         guard let indexBuf = platonic.platoTris.indexBuf else { return }
-        
-        let uniformLen = MemoryLayout<PlatoUniforms>.size
-        let indexCount = indexBuf.length / MemoryLayout<UInt32>.stride
-
-        renderEnc.setTriangleFillMode(platoFlo.wire ? .lines : .fill)
-        renderEnc.setRenderPipelineState(renderState)
-        renderEnc.setDepthStencilState(pipeline.depthStencil(write: true))
-        
-        renderEnc.setVertexBuffer(platonic.platoTris.vertexBuf, offset: 0, index: 0)
-        renderEnc.setVertexBuffer(uniformBuf, offset: uniformLen, index: 1)
-        renderEnc.setFragmentBuffer(uniformBuf, offset: uniformLen, index: 1)
-
         guard let cubeNode = pipeline.cubemapNode else { return }
         guard let cubeTex = cubeNode.cubeTex else { return }
         guard let inTex = cubeNode.inTex else { return }
-
-        renderEnc.setFragmentTexture(cubeTex, index: 0)
-        renderEnc.setFragmentTexture(inTex, index: 1)
-
         guard let altTex else { return }
-        renderEnc.setFragmentTexture(altTex, index: 2)
+
+        let uniformLen = MemoryLayout<PlatoUniforms>.size
+        let indexCount = indexBuf.length / MemoryLayout<UInt32>.stride
+
+        renderCmd.setTriangleFillMode(platoFlo.wire ? .lines : .fill)
+        renderCmd.setRenderPipelineState(renderPipe)
+        renderCmd.setDepthStencilState(pipeline.depthStencil(write: true))
+        
+        renderCmd.setVertexBuffer(platonic.platoTris.vertexBuf, offset: 0, index: 0)
+        renderCmd.setVertexBuffer(uniformBuf, offset: uniformLen, index: 1)
+        renderCmd.setFragmentBuffer(uniformBuf, offset: uniformLen, index: 1)
+
+        renderCmd.setFragmentTexture(cubeTex, index: 0)
+        renderCmd.setFragmentTexture(inTex, index: 1)
+        renderCmd.setFragmentTexture(altTex, index: 2)
         #if true
-        renderEnc.drawPrimitives(type: .triangle,
+        renderCmd.drawPrimitives(type: .triangle,
                                  vertexStart: 0,
                                  vertexCount: indexCount)
         #else
-        renderEnc.drawIndexedPrimitives(
-            type              : .triangle,
+        renderCmd.drawIndexedPrimitives(
+            metType              : .triangle,
             indexCount        : indexCount,
             indexType         : .uint32,
             indexBuffer       : indexBuf,
@@ -172,7 +169,7 @@ public class MetNodePlato: MetNode {
         platonic.nextCounter()
     }
 
-    override public func updateTextures(via: String) {
+    override public func updateTextures() {
 
         updateUniforms()
         altTex = altTex ?? makePaletteTex() // 256 false color palette
