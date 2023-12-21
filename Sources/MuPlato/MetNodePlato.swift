@@ -19,11 +19,10 @@ struct PlatoUniforms {
     var worldCamera  : vector_float4
     var identity     : matrix_float4x4
     var inverse      : matrix_float4x4
-
-    var pad256bytes  : vector_float4 = .zero
 }
 
 enum PlatoStyle: Int {
+
     case unknown = -1
     case hidden  = 0
     case color   = 1
@@ -38,7 +37,6 @@ public class MetNodePlato: MetNodeRender {
 
     var uniformBuf : MTLBuffer!
     let platonic   : Platonic
-
     let platoFlo   = PlatoFlo.shared
     let cubeFlo    = CubeFlo.shared
     var platoStyle = PlatoStyle.reflect
@@ -64,7 +62,7 @@ public class MetNodePlato: MetNodeRender {
     func makeResources() {
 
         uniformBuf = pipeline.device.makeBuffer(
-            length: MemoryLayout<PlatoUniforms>.size * 2,
+            length: MemoryLayout<PlatoUniforms>.stride,
             options: .cpuCacheModeWriteCombined)!
     }
     func makePipeline() {
@@ -72,9 +70,9 @@ public class MetNodePlato: MetNodeRender {
         let vertexName = "vertexPlato"
         let fragmentName: String
         switch platoStyle {
-        case .color:    fragmentName = "fragmentPlatoCubeColor"
-        case .reflect:  fragmentName = "fragmentPlatoCubeIndex"
-        default:        fragmentName = "fragmentPlatoColor"
+        case .color   : fragmentName = "fragmentPlatoCubeColor"
+        case .reflect : fragmentName = "fragmentPlatoCubeIndex"
+        default       : fragmentName = "fragmentPlatoColor"
         }
         
         let vd = MTLVertexDescriptor()
@@ -109,19 +107,19 @@ public class MetNodePlato: MetNodeRender {
             platonic.updateHarmonif(harmonif)
         }
         let perspective = pipeline.perspective()
-        let cameraPosition = vector_float4([ 0, 0, -4 * Float(platoFlo.zoom), 1 ])
-        let platoView = translation(cameraPosition) * orientation
-        let worldCamera = orientation.inverse * -cameraPosition
+        let cameraPos = vector_float4([0, 0, -4 * platoFlo.zoom, 1])
+        let platoView = translation(cameraPos) * orientation
+        let worldCamera = orientation.inverse * -cameraPos
         let projectModel = perspective * (platoView * identity)
 
         var platoUniforms = PlatoUniforms(
-            range        : platonic.counter.range01,
-            harmonif     : platoFlo.harmonif,
-            passthru     : platoFlo.passthru,
-            shadowWhite  : platoFlo.shadowWhite,
-            shadowDepth  : platoFlo.shadowDepth,
-            invert       : platoFlo.invert,
-            zoom         : platoFlo.zoom,
+            range       : platonic.counter.range01,
+            harmonif    : platoFlo.harmonif,
+            passthru    : platoFlo.passthru,
+            shadowWhite : platoFlo.shadowWhite,
+            shadowDepth : platoFlo.shadowDepth,
+            invert      : platoFlo.invert,
+            zoom        : platoFlo.zoom,
 
             projectModel : projectModel,
             worldCamera  : worldCamera,
@@ -129,7 +127,7 @@ public class MetNodePlato: MetNodeRender {
             inverse      : identity.inverse.transpose)
 
         let uniformLen = MemoryLayout<PlatoUniforms>.stride
-        memcpy(uniformBuf.contents() + uniformLen, &platoUniforms, uniformLen)
+        memcpy(uniformBuf.contents(), &platoUniforms, uniformLen)
     }
 
     override public func renderNode(_ renderCmd: MTLRenderCommandEncoder) {
@@ -140,7 +138,6 @@ public class MetNodePlato: MetNodeRender {
         guard let inTex = cubeNode.inTex else { return }
         guard let altTex else { return }
 
-        let uniformLen = MemoryLayout<PlatoUniforms>.size
         let indexCount = indexBuf.length / MemoryLayout<UInt32>.stride
 
         renderCmd.setTriangleFillMode(platoFlo.wire ? .lines : .fill)
@@ -148,24 +145,19 @@ public class MetNodePlato: MetNodeRender {
         renderCmd.setDepthStencilState(pipeline.depthStencil(write: true))
         
         renderCmd.setVertexBuffer(platonic.platoTris.vertexBuf, offset: 0, index: 0)
-        renderCmd.setVertexBuffer(uniformBuf, offset: uniformLen, index: 1)
-        renderCmd.setFragmentBuffer(uniformBuf, offset: uniformLen, index: 1)
+        renderCmd.setVertexBuffer(uniformBuf, offset: 0, index: 1)
+        renderCmd.setFragmentBuffer(uniformBuf, offset: 0, index: 1)
 
         renderCmd.setFragmentTexture(cubeTex, index: 0)
         renderCmd.setFragmentTexture(inTex, index: 1)
         renderCmd.setFragmentTexture(altTex, index: 2)
-        #if true
-        renderCmd.drawPrimitives(type: .triangle,
-                                 vertexStart: 0,
-                                 vertexCount: indexCount)
-        #else
         renderCmd.drawIndexedPrimitives(
-            metType              : .triangle,
+            type              : .triangle,
             indexCount        : indexCount,
             indexType         : .uint32,
             indexBuffer       : indexBuf,
             indexBufferOffset : 0)
-        #endif
+        
         platonic.nextCounter()
     }
 
@@ -182,10 +174,10 @@ public class MetNodePlato: MetNodeRender {
             let palRegion = MTLRegionMake3D(0, 0, 0, palSize, 1, 1)
             let bytesPerRow = palSize * pixSize
             let palBytes = getPal(palSize)
-            altTex.replace(region: palRegion,
-                           mipmapLevel: 0,
-                           withBytes: palBytes,
-                           bytesPerRow: bytesPerRow)
+            altTex.replace(region      : palRegion,
+                           mipmapLevel : 0,
+                           withBytes   : palBytes,
+                           bytesPerRow : bytesPerRow)
         }
         func makePaletteTex() -> MTLTexture? {
 
