@@ -27,7 +27,7 @@ extension SIMD3<Float> {
 var faceHashP0 = Set<Float>()
 var faceHashP1 = Set<Float>()
 
-extension PlatoTris {
+extension PlatoModel {
 
     func updateBuffersDups(_ device: MTLDevice) {
 
@@ -38,7 +38,7 @@ extension PlatoTris {
         var indices =  [UInt32](repeating:        0, count: indexCount)
         var vi = 0
 
-        if PlatoTris.logVertex { print() }
+        if PlatoModel.logVertex { print() }
 
             faceHashP0.removeAll(keepingCapacity: true)
         faceHashP1.removeAll(keepingCapacity: true)
@@ -59,7 +59,7 @@ extension PlatoTris {
                 vertices[vi].harmonic = Float(v.h)
 
                 indices[vi] = UInt32(vi)
-                if PlatoTris.logVertex {
+                if PlatoModel.logVertex {
                     logVert01(vertices[vi], vi)
                 }
                 vi += 1

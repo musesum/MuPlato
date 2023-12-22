@@ -7,28 +7,30 @@ import MuFlo
 import MuColor
 import simd
 
-open class PlatoPipeline: MetPipeline {
+open class PlatoPipeline: Pipeline {
 
-    var platoNode: MetNode!    
-    var cameraNode: MetNode!
+    var platoNode: MetalNode!    
+    var cameraNode: MetalNode!
     var platonic: Platonic!
 
     var motion: Motion?
     #if os(visionOS)
     #else
-    var facePose: MetFacePose!
+    var facePose: FacePose!
     #endif
-    var displayLink: MetDisplayLink!
+    var displayLink: DisplayLink!
 
     let cameraFlo = CameraFlo.shared
     let cubeFlo = CubeFlo.shared
     let platoFlo = PlatoFlo.shared
     private var colorFlo = ColorFlo(Flo.root˚)
 
-    override public init(_ bounds: CGRect) {
+    public init(_ bounds: CGRect,
+                _ metalVD: MTLVertexDescriptor) {
+        
         super.init(bounds)
         motion = Motion.shared
-        platonic = Platonic(device)
+        platonic = Platonic(device, metalVD)
         setupPipeline(Flo.root˚)
     }
 
@@ -38,11 +40,11 @@ open class PlatoPipeline: MetPipeline {
         metalLayer.framebufferOnly = true
 
         if cameraFlo.stream {
-            cameraNode = MetNodeCamera(root˚, self, "camera", "compute.camera")
+            cameraNode = CameraNode(root˚, self, "camera", "compute.camera")
             //?? nodes.append(cameraNode)
         }
         if cubeFlo.back {
-            cubemapNode = MetNodeCubemap(self, cameraFlo.stream)
+            cubemapNode = CubemapNode(self, cameraFlo.stream)
             if let cubemapNode {
                 let zero = Float.zero
                 let f = Float(0.75)
@@ -58,10 +60,10 @@ open class PlatoPipeline: MetPipeline {
         #if os(visionOS)
         #else
         cameraNode?.setMetalNodeOn(true) {
-            MetCamera.shared.startCamera()
+            Camera.shared.startCamera()
         }
         #endif
-        displayLink = MetDisplayLink(self, fps: 60)
+        displayLink = DisplayLink(self, fps: 60)
 
         settingUp = false
     }
@@ -85,7 +87,7 @@ extension PlatoPipeline: MetFacePoseDelegate {
     }
 }
 #endif
-extension PlatoPipeline: MetDisplayLinkFire {
+extension PlatoPipeline: DisplayLinkFire {
 
     func didFire() {
         if settingUp { return }

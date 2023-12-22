@@ -6,7 +6,7 @@ import Vision
 import UIKit
 import simd
 
-extension PlatoTris {
+extension PlatoModel {
 
     func updateBuffers(_ device: MTLDevice) {
 
@@ -14,10 +14,10 @@ extension PlatoTris {
         let indexCount = tri01s.count*3
 
         var vertices = [PlatoVertex](repeating: PlatoVertex(), count: vertexCount)
-        var indices =  [UInt32](repeating:        0, count: indexCount)
+        var indices =  [UInt32]     (repeating:             0, count: indexCount)
         var vi = 0
         
-        if PlatoTris.logVertex { print() }
+        if PlatoModel.logVertex { print() }
 
         for tri in tri01s {
 
@@ -32,7 +32,7 @@ extension PlatoTris {
                 vertices[vi].harmonic = Float(vert.h)
 
                 indices[vi] = UInt32(vi)
-                if PlatoTris.logVertex {
+                if PlatoModel.logVertex {
                     logVert01(vertices[vi], vi)
                 }
                 vi += 1

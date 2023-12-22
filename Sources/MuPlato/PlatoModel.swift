@@ -3,19 +3,23 @@
 import Foundation
 import Metal
 import MetalKit
+import MuVision
 
-class PlatoTris {
+class PlatoModel: MeshModel {
+
     static var logVertex = false
 
     var tri01s: [Tri01]
-    var indexBuf: MTLBuffer!
-    var vertexBuf: MTLBuffer!
 
-    init(_ tris: [Tri01]) {
+    init(_ device: MTLDevice,
+         _ metalVD: MTLVertexDescriptor,
+         _ tris: [Tri01]) {
+
         self.tri01s = tris
+        super.init(device,metalVD)
     }
 
-    func pnt4f(_ p: Pnt,_ w: Float) -> Pnt4 {
+    func pnt4f(_ p: Float3,_ w: Float) -> Pnt4 {
         return Pnt4(Float(p.x),
                     Float(p.y),
                     Float(p.z),
@@ -36,7 +40,7 @@ class PlatoTris {
 
             let c0 = tri.centroid(0) // middle of lowerbound 0...1
             let c1 = tri.centroid(1) // middle of upperbound 0...1
-            let c01 = Pnt01(c0, c1, harmonic: depth+1) // used to calc concave/convex relative to (0,0,0)
+            let c01 = Vertex01(c0, c1, harmonic: depth+1) // used to calc concave/convex relative to (0,0,0)
 
             subTris.append( Tri01(tri.v0, tri.v1, c01))
             subTris.append( Tri01(tri.v1, tri.v2, c01))

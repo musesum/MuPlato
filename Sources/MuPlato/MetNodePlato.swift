@@ -33,24 +33,26 @@ enum PlatoStyle: Int {
     }
 }
 
-public class MetNodePlato: MetNodeRender {
+public class MetNodePlato: RenderNode {
 
     var uniformBuf : MTLBuffer!
-    let platonic   : Platonic
+    var platonic   : Platonic!
     let platoFlo   = PlatoFlo.shared
     let cubeFlo    = CubeFlo.shared
     var platoStyle = PlatoStyle.reflect
     var harmonif   = Float(0.95) // < 1 concave, > 1 convex
 
+    let metalVD = MTLVertexDescriptor() //??? temp
+
     public var getPal: GetTextureFunc?
 
-    public init(_ pipeline: MetPipeline,
+    public init(_ pipeline: Pipeline,
                 _ getPal: @escaping GetTextureFunc) {
-
-        self.platonic = ((pipeline as? PlatoPipeline)?
-            .platonic ?? Platonic(pipeline.device))
-
+        
         super.init(pipeline, "plato", "render.plato", .rendering)
+        self.platonic = (pipeline as? PlatoPipeline)?
+            .platonic ?? Platonic(pipeline.device, metalVD)
+
         self.filename = filename
         self.getPal = getPal
 
@@ -75,7 +77,7 @@ public class MetNodePlato: MetNodeRender {
         default       : fragmentName = "fragmentPlatoColor"
         }
         
-        let vd = MTLVertexDescriptor()
+        let vd = metalVD
         var offset = 0
 
         for i in 0 ..< PlatoVertex.count {
@@ -132,7 +134,7 @@ public class MetNodePlato: MetNodeRender {
 
     override public func renderNode(_ renderCmd: MTLRenderCommandEncoder) {
 
-        guard let indexBuf = platonic.platoTris.indexBuf else { return }
+        guard let indexBuf = platonic.platoModel.indexBuf else { return }
         guard let cubeNode = pipeline.cubemapNode else { return }
         guard let cubeTex = cubeNode.cubeTex else { return }
         guard let inTex = cubeNode.inTex else { return }
@@ -144,7 +146,7 @@ public class MetNodePlato: MetNodeRender {
         renderCmd.setRenderPipelineState(renderPipe)
         renderCmd.setDepthStencilState(pipeline.depthStencil(write: true))
         
-        renderCmd.setVertexBuffer(platonic.platoTris.vertexBuf, offset: 0, index: 0)
+        renderCmd.setVertexBuffer(platonic.platoModel.vertexBuf, offset: 0, index: 0)
         renderCmd.setVertexBuffer(uniformBuf, offset: 0, index: 1)
         renderCmd.setFragmentBuffer(uniformBuf, offset: 0, index: 1)
 
@@ -181,13 +183,13 @@ public class MetNodePlato: MetNodeRender {
         }
         func makePaletteTex() -> MTLTexture? {
 
-            let paletteTex = MetTexCache
+            let paletteTex = TextureCache
                 .makeTexturePixelFormat(.bgra8Unorm,
                                         size: CGSize(width: 256, height: 1),
                                         device: pipeline.device)
             return paletteTex
         }
-        if let cubeNode = inNode as? MetNodeCubemap {
+        if let cubeNode = inNode as? CubemapNode {
             inTex = cubeNode.cubeTex
         } else {
             inTex = inNode?.outTex

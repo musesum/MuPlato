@@ -3,16 +3,16 @@
 import Foundation
 import MetalKit
 
-protocol MetDisplayLinkFire {
+protocol DisplayLinkFire {
     func didFire()
 }
-class MetDisplayLink {
+class DisplayLink {
     
     var link: CADisplayLink?
-    var linkFire: MetDisplayLinkFire
+    var linkFire: DisplayLinkFire
     var fps: NSInteger = 60
     
-    init(_ linkFire: MetDisplayLinkFire, fps: Int = 60) {
+    init(_ linkFire: DisplayLinkFire, fps: Int = 60) {
         self.linkFire = linkFire
         self.fps = fps
         link = CADisplayLink(target: self, selector: #selector(displayLinkDidFire))

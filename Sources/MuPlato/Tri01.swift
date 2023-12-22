@@ -2,20 +2,22 @@
 
 import Foundation
 
+typealias V01 = Vertex01
+
 /// ranged triangle for uniform 0...1
 class Tri01 {
 
-    let v0: Pnt01 // ranged vertex 0...1
-    let v1: Pnt01 // ranged vertex 0...1
-    let v2: Pnt01 // ranged vertex 0...1
+    let v0: Vertex01 // ranged vertex 0...1
+    let v1: Vertex01 // ranged vertex 0...1
+    let v2: Vertex01 // ranged vertex 0...1
     var id = 0  // unique ID for triangle color
 
-    init(_ vs: (Pnt01,Pnt01,Pnt01)) {
+    init(_ vs: (Vertex01,Vertex01,Vertex01)) {
         self.v0 = vs.0
         self.v1 = vs.1
         self.v2 = vs.2
     }
-    init(_ v0: Pnt01,_ v1: Pnt01,_ v2: Pnt01) {
+    init(_ v0: Vertex01,_ v1: Vertex01,_ v2: Vertex01) {
         self.v0 = v0
         self.v1 = v1
         self.v2 = v2
@@ -153,11 +155,11 @@ class Tri01 {
         let area = sqrt(sum * (sum-s01) * (sum-s12) * (sum-s20))
         return abs(area)
     }
-    func centroid(_ i: Int) -> Pnt {
+    func centroid(_ i: Int) -> Float3 {
         let v0_ = (i == 0) ? v0.p0 : v0.p1
         let v1_ = (i == 0) ? v1.p0 : v1.p1
         let v2_ = (i == 0) ? v2.p0 : v2.p1
-        return Pnt01.mid3(v0_, v1_, v2_)
+        return Vertex01.mid3(v0_, v1_, v2_)
     }
 
 }

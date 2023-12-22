@@ -7,22 +7,25 @@ import UIKit
 
 open class Platonic {
 
+    let device: MTLDevice
+    let metalVD: MTLVertexDescriptor
+
     var counter: PlatoCounter
-    var platoTris: PlatoTris
-    var platoTriss = [PlatoTris]()
-
-    var device: MTLDevice 
-
+    var platoModel: PlatoModel!
+    var platoModels = [PlatoModel]()
+    
     //var harmonicSteps = 1000
 
     let platoFlo = PlatoFlo.shared
     let cameraFlo = CameraFlo.shared
     var platoPhase = CGPoint.zero
 
-    init(_ device: MTLDevice) {
+    public init(_ device: MTLDevice,
+                _ metalVD: MTLVertexDescriptor) {
 
-        self.platoTris = PlatoTris([])
         self.device = device
+        self.metalVD = metalVD
+        //???? self.platoModel = PlatoModel([])
         self.platoPhase = platoFlo.phase
         self.counter = PlatoCounter(8000, cameraFlo.stream, harmonic: 4)
 
@@ -59,13 +62,13 @@ open class Platonic {
         Tri01.reset()
         buildAll()
 
-        for phase in 0 ..< platoTriss.count {
-            let plaTrii = platoTriss[phase]
+        for phase in 0 ..< platoModels.count {
+            let plaTrii = platoModels[phase]
             _ = plaTrii.trisect(counter.harmonic)
         }
-        for i in 0 ..< platoTriss.count {
+        for i in 0 ..< platoModels.count {
 
-            let plaTrii = platoTriss[i]
+            let plaTrii = platoModels[i]
 
             logBuildCounter(i)
             for tri in plaTrii.tri01s {
@@ -75,8 +78,8 @@ open class Platonic {
     }
     func buildPhase() {
         logCounter()
-        platoTris = platoTriss[counter.phase]
-        platoTris.updateBuffers(device)
+        platoModel = platoModels[counter.phase]
+        platoModel.updateBuffers(device)
     }
     func logBuildCounter(_ i: Int) {
         //print("build phase: \(i) harmonic: \(counter.harmonic )")
@@ -85,7 +88,7 @@ open class Platonic {
         print("phase: \(counter.phase)  harmonic: \(counter.harmonic) counter: \(counter.counter)  \(counter.increasing ? ">" : "<")")
     }
     func updateHarmonif(_ harmonif: Float) {
-        platoTris.updateHarmonif(harmonif, device)
+        platoModel.updateHarmonif(harmonif, device)
         
     }
     func shadow() -> vector_float4 {
