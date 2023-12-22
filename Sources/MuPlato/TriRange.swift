@@ -2,22 +2,20 @@
 
 import Foundation
 
-typealias V01 = Vertex01
-
 /// ranged triangle for uniform 0...1
-class Tri01 {
+class TriRange {
 
-    let v0: Vertex01 // ranged vertex 0...1
-    let v1: Vertex01 // ranged vertex 0...1
-    let v2: Vertex01 // ranged vertex 0...1
+    let v0: VertexRange // ranged vertex 0...1
+    let v1: VertexRange // ranged vertex 0...1
+    let v2: VertexRange // ranged vertex 0...1
     var id = 0  // unique ID for triangle color
 
-    init(_ vs: (Vertex01,Vertex01,Vertex01)) {
+    init(_ vs: (VertexRange,VertexRange,VertexRange)) {
         self.v0 = vs.0
         self.v1 = vs.1
         self.v2 = vs.2
     }
-    init(_ v0: Vertex01,_ v1: Vertex01,_ v2: Vertex01) {
+    init(_ v0: VertexRange,_ v1: VertexRange,_ v2: VertexRange) {
         self.v0 = v0
         self.v1 = v1
         self.v2 = v2
@@ -62,7 +60,7 @@ class Tri01 {
     }
     func setId(_ phase: Int) {
 
-        Tri01.updatePhase(phase)
+        TriRange.updatePhase(phase)
 
         let area0 = area(0)
         let area1 = area(1)
@@ -78,34 +76,34 @@ class Tri01 {
         }
 
         if hasArea0 {
-            if let (hashId,hashPhase) = Tri01.hashIdPhase[hash0],
+            if let (hashId,hashPhase) = TriRange.hashIdPhase[hash0],
                phase - hashPhase < 2 {
                 id = hashId
             } else {
-                id = Tri01.nextId()
-                Tri01.hashIdPhase[hash0] = (id,phase)
+                id = TriRange.nextId()
+                TriRange.hashIdPhase[hash0] = (id,phase)
             }
             if hasArea1 {
-                Tri01.hashIdPhase[hash1] = (id,phase)
+                TriRange.hashIdPhase[hash1] = (id,phase)
                 log("=\(id)⁰⁺¹")
             } else {
                 // remove this tri  at end of phase
                 log("=\(id)⁰⁻")
-                Tri01.retiring.append(hash1)
+                TriRange.retiring.append(hash1)
             }
             return
         } else if hasArea1 {
-            id = Tri01.nextId()
-            Tri01.hashIdPhase[hash1] = (id,phase)
+            id = TriRange.nextId()
+            TriRange.hashIdPhase[hash1] = (id,phase)
             log("+\(id)¹")
             return
         }
     }
     func assignId() {
-        if Tri01.assigning.contains(id) {
+        if TriRange.assigning.contains(id) {
             print("⁉️\(id)",terminator:" ")
         } else {
-            Tri01.assigning.insert(id)
+            TriRange.assigning.insert(id)
         }
     }
     func log(_ str: String, details: Bool = false ) {
@@ -159,7 +157,7 @@ class Tri01 {
         let v0_ = (i == 0) ? v0.p0 : v0.p1
         let v1_ = (i == 0) ? v1.p0 : v1.p1
         let v2_ = (i == 0) ? v2.p0 : v2.p1
-        return Vertex01.mid3(v0_, v1_, v2_)
+        return VertexRange.mid3(v0_, v1_, v2_)
     }
 
 }

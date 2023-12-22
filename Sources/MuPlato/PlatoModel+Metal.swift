@@ -10,8 +10,8 @@ extension PlatoModel {
 
     func updateBuffers(_ device: MTLDevice) {
 
-        let vertexCount = tri01s.count*3
-        let indexCount = tri01s.count*3
+        let vertexCount = triRanges.count*3
+        let indexCount = triRanges.count*3
 
         var vertices = [PlatoVertex](repeating: PlatoVertex(), count: vertexCount)
         var indices =  [UInt32]     (repeating:             0, count: indexCount)
@@ -19,7 +19,7 @@ extension PlatoModel {
         
         if PlatoModel.logVertex { print() }
 
-        for tri in tri01s {
+        for tri in triRanges {
 
             for vert in [tri.v0, tri.v1, tri.v2] {
 

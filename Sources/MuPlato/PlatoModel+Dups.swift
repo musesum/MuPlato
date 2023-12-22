@@ -31,8 +31,8 @@ extension PlatoModel {
 
     func updateBuffersDups(_ device: MTLDevice) {
 
-        let vertexCount = tri01s.count*3
-        let indexCount = tri01s.count*3
+        let vertexCount = triRanges.count*3
+        let indexCount = triRanges.count*3
 
         var vertices = [PlatoVertex](repeating: PlatoVertex(), count: vertexCount)
         var indices =  [UInt32](repeating:        0, count: indexCount)
@@ -44,7 +44,7 @@ extension PlatoModel {
         faceHashP1.removeAll(keepingCapacity: true)
 
 
-        for tri in tri01s {
+        for tri in triRanges {
 
             if testDuplicate("p0", tri.v0.p0, tri.v1.p0, tri.v2.p0, tri) {
                 continue
@@ -90,7 +90,7 @@ extension PlatoModel {
                        _ v0: SIMD3<Float>,
                        _ v1: SIMD3<Float>,
                        _ v2: SIMD3<Float>,
-                       _ tri: Tri01) -> Bool {
+                       _ tri: TriRange) -> Bool {
         let combined = v0.hash(10) * v1.hash(10) * v2.hash(10)
 
         if from == "p0" {

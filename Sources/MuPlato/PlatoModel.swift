@@ -9,13 +9,13 @@ class PlatoModel: MeshModel {
 
     static var logVertex = false
 
-    var tri01s: [Tri01]
+    var triRanges: [TriRange]
 
     init(_ device: MTLDevice,
          _ metalVD: MTLVertexDescriptor,
-         _ tris: [Tri01]) {
+         _ triRanges: [TriRange]) {
 
-        self.tri01s = tris
+        self.triRanges = triRanges
         super.init(device,metalVD)
     }
 
@@ -28,26 +28,26 @@ class PlatoModel: MeshModel {
     /// subdivide each Tri01 into 3 Tri01(s) until 3^harmonic divisions
     func trisect(_ harmonic: Int,
                  _ depth: Int = 0,
-                 _ superTris: [Tri01]? = nil) -> [Tri01] {
+                 _ superTris: [TriRange]? = nil) -> [TriRange] {
 
-        let superTris = superTris ?? tri01s
+        let superTris = superTris ?? triRanges
         if depth == harmonic {
             return superTris
         }
-        var subTris = [Tri01]()
+        var subTris = [TriRange]()
 
         for tri in superTris {
 
             let c0 = tri.centroid(0) // middle of lowerbound 0...1
             let c1 = tri.centroid(1) // middle of upperbound 0...1
-            let c01 = Vertex01(c0, c1, harmonic: depth+1) // used to calc concave/convex relative to (0,0,0)
+            let c01 = VertexRange(c0, c1, harmonic: depth+1) // used to calc concave/convex relative to (0,0,0)
 
-            subTris.append( Tri01(tri.v0, tri.v1, c01))
-            subTris.append( Tri01(tri.v1, tri.v2, c01))
-            subTris.append( Tri01(tri.v2, tri.v0, c01))
+            subTris.append(TriRange(tri.v0, tri.v1, c01))
+            subTris.append(TriRange(tri.v1, tri.v2, c01))
+            subTris.append(TriRange(tri.v2, tri.v0, c01))
         }
-        tri01s = trisect(harmonic, depth+1, subTris)
-        return tri01s
+        triRanges = trisect(harmonic, depth+1, subTris)
+        return triRanges
     }
 
 

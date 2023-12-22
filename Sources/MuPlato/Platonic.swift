@@ -59,7 +59,7 @@ open class Platonic {
         }
     }
     func buildHarmonic() {
-        Tri01.reset()
+        TriRange.reset()
         buildAll()
 
         for phase in 0 ..< platoModels.count {
@@ -71,7 +71,7 @@ open class Platonic {
             let plaTrii = platoModels[i]
 
             logBuildCounter(i)
-            for tri in plaTrii.tri01s {
+            for tri in plaTrii.triRanges {
                 tri.setId(i)
             }
         }
