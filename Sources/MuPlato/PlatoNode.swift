@@ -1,20 +1,22 @@
 //  created by musesum on 3/16/23.
 
 import Foundation
+import simd
+
 import QuartzCore
 import Metal
+import MetalKit
 import MuMetal
-import simd
+import MuVision
 
 struct PlatoUniforms {
     var range        : Float
-    var harmonif     : Float
+    var depth        : Float
     var passthru     : Float
     var shadowWhite  : Float
     var shadowDepth  : Float
     var invert       : Float
     var zoom         : Float
-
     var projectModel : matrix_float4x4
     var worldCamera  : vector_float4
     var identity     : matrix_float4x4
@@ -33,16 +35,137 @@ enum PlatoStyle: Int {
     }
 }
 
-public class MetNodePlato: RenderNode {
+public class PlatoModel: MeshModel<PlatoVertex> {
 
+    var phaseTriangles: PhaseTriangles!
+    var platoPhases = [PhaseTriangles]()
+    let platoFlo   = PlatoFlo.shared
+    let cameraFlo = CameraFlo.shared
+    var counter: PlatoCounter!
+
+    var convex = Float(0.95)
+
+    override public init(_ device: MTLDevice,
+                         _ nameFormats: [VertexNameFormat],
+                         _ vertexStride: Int) {
+
+        super.init(device, nameFormats, vertexStride)
+
+        self.counter = PlatoCounter(8000, cameraFlo.stream, harmonic: 4)
+        buildHarmonic()
+        buildPhase()
+    }
+    func updatePlatoBuffers() {
+        let triCount = phaseTriangles.triCount
+        let verticesLen = triCount * MemoryLayout<PlatoVertex>.stride
+        let indicesLen  = triCount * MemoryLayout<UInt32>.size
+        updateBuffers(verticesLen, indicesLen)
+    }
+
+    func buildHarmonic() {
+        TriRange.reset()
+        // buildAll
+        platoPhases.removeAll()
+        for phase in 0 ..< counter.phases {
+            platoPhases.append(PhaseTriangles.build(phase))
+        }
+
+        for phaseIndex in 0 ..< platoPhases.count {
+            let phase = platoPhases[phaseIndex]
+            _ = phase.trisect(counter.harmonic)
+        }
+        for phaseIndex in 0 ..< platoPhases.count {
+            let phase = platoPhases[phaseIndex]
+            logBuildCounter(phaseIndex)
+            for tri in phase.triRanges {
+                tri.setId(phaseIndex)
+            }
+        }
+        func logBuildCounter(_ i: Int) {
+            //print("build phase: \(i) harmonic: \(counter.harmonic )")
+        }
+    }
+    func updateSubdivisions() -> Bool {
+        if convex != platoFlo.convex {
+            convex = platoFlo.convex
+            phaseTriangles.updateTriangles() //????
+            return true
+        }
+        return false
+    }
+    func nextCounter() {
+
+//????        if counter.phase != platoFlo.phase {
+//            counter.setPhase(platoFlo.phase)
+//            counter.next()
+//            buildHarmonic()
+//            buildPhase()
+//
+//        } else 
+
+        if platoFlo.morph {
+
+            counter.next()
+
+            if counter.newHarmonic {
+                buildHarmonic()
+            }
+            if counter.newPhase {
+                buildPhase()
+            }
+        }
+    }
+    func buildPhase() {
+        logCounter()
+        phaseTriangles = platoPhases[counter.phase]
+        phaseTriangles.updateTriangles()
+        vertices = phaseTriangles.vertices
+        indices = phaseTriangles.indices
+        updatePlatoBuffers()
+    }
+    func logCounter() {
+        print("phase: \(counter.phase)  harmonic: \(counter.harmonic) counter: \(counter.counter)  \(counter.increasing ? ">" : "<")")
+    }
+}
+public class PlatoMetal: MeshMetal {
+
+    var platoModel : PlatoModel!
+
+    init(_ device: MTLDevice) {
+
+        super.init(device: device, compare: .less, winding: .clockwise)
+
+        let nameFormats: [VertexNameFormat] = [
+            ("pos0"    , .float4),
+            ("pos1"    , .float4),
+            ("norm0"   , .float4),
+            ("norm1"   , .float4),
+            ("vertId"  , .float),
+            ("faceId"  , .float),
+            ("harmonic", .float),
+            ("reserved", .float),
+        ]
+        let vertexStride = MemoryLayout<PlatoVertex>.stride
+        platoModel = PlatoModel(device, nameFormats, vertexStride)
+        makeMetalVD(nameFormats,vertexStride)
+        mtkMesh = try! MTKMesh(mesh: platoModel.mdlMesh, device: device)
+    }
+    func updateUniforms() {
+
+        if platoModel.updateSubdivisions() {
+            platoModel.updatePlatoBuffers()
+            mtkMesh = try! MTKMesh(mesh: platoModel.mdlMesh, device: device) //????
+        }
+    }
+}
+
+public class PlatoNode: RenderNode {
+
+    var platoMetal : PlatoMetal!
     var uniformBuf : MTLBuffer!
-    var platonic   : Platonic!
     let platoFlo   = PlatoFlo.shared
     let cubeFlo    = CubeFlo.shared
     var platoStyle = PlatoStyle.reflect
-    var harmonif   = Float(0.95) // < 1 concave, > 1 convex
-
-    let metalVD = MTLVertexDescriptor() //??? temp
 
     public var getPal: GetTextureFunc?
 
@@ -50,9 +173,7 @@ public class MetNodePlato: RenderNode {
                 _ getPal: @escaping GetTextureFunc) {
         
         super.init(pipeline, "plato", "render.plato", .rendering)
-        self.platonic = (pipeline as? PlatoPipeline)?
-            .platonic ?? Platonic(pipeline.device, metalVD)
-
+        self.platoMetal = PlatoMetal(pipeline.device)
         self.filename = filename
         self.getPal = getPal
 
@@ -60,7 +181,7 @@ public class MetNodePlato: RenderNode {
         makeResources()
         makePipeline()
     }
-    
+
     func makeResources() {
 
         uniformBuf = pipeline.device.makeBuffer(
@@ -76,47 +197,39 @@ public class MetNodePlato: RenderNode {
         case .reflect : fragmentName = "fragmentPlatoCubeIndex"
         default       : fragmentName = "fragmentPlatoColor"
         }
-        
-        let vd = metalVD
-        var offset = 0
-
-        for i in 0 ..< PlatoVertex.count {
-            vd.attributes[i].bufferIndex = 0
-            vd.attributes[i].offset = offset
-            vd.attributes[i].format = .float4
-            offset += MemoryLayout<vector_float4>.size
-        }
-        vd.layouts[0].stepFunction = .perVertex
-        vd.layouts[0].stride = MemoryLayout<PlatoVertex>.size
 
         let pd = MTLRenderPipelineDescriptor()
         pd.vertexFunction   = library.makeFunction(name: vertexName)
         pd.fragmentFunction = library.makeFunction(name: fragmentName)
-        pd.vertexDescriptor = vd
+        pd.vertexDescriptor = platoMetal.metalVD
 
         pd.colorAttachments[0].pixelFormat = .bgra8Unorm
         pd.depthAttachmentPixelFormat = .depth32Float
 
-        do { renderPipe = try pipeline.device.makeRenderPipelineState(descriptor: pd) }
-        catch { print("⁉️ \(#function) failed to create \(name), error \(error)") }
+        do {
+            renderPipe = try pipeline.device.makeRenderPipelineState(descriptor: pd)
+        }
+        catch {
+            print("⁉️ \(#function) failed to create \(name), error \(error)")
+        }
     }
     
     func updateUniforms() {
 
         guard let orientation = Motion.shared.sceneOrientation else { return }
-        if harmonif != platoFlo.harmonif {
-            harmonif = platoFlo.harmonif
-            platonic.updateHarmonif(harmonif)
-        }
+
         let perspective = pipeline.perspective()
         let cameraPos = vector_float4([0, 0, -4 * platoFlo.zoom, 1])
         let platoView = translation(cameraPos) * orientation
         let worldCamera = orientation.inverse * -cameraPos
         let projectModel = perspective * (platoView * identity)
 
+        platoMetal.updateUniforms()
+        let platoFlo = platoMetal.platoModel.platoFlo
+
         var platoUniforms = PlatoUniforms(
-            range       : platonic.counter.range01,
-            harmonif    : platoFlo.harmonif,
+            range       : platoMetal.platoModel.counter.range01,
+            depth       : platoFlo.convex,
             passthru    : platoFlo.passthru,
             shadowWhite : platoFlo.shadowWhite,
             shadowDepth : platoFlo.shadowDepth,
@@ -134,33 +247,22 @@ public class MetNodePlato: RenderNode {
 
     override public func renderNode(_ renderCmd: MTLRenderCommandEncoder) {
 
-        guard let indexBuf = platonic.platoModel.indexBuf else { return }
         guard let cubeNode = pipeline.cubemapNode else { return }
         guard let cubeTex = cubeNode.cubeTex else { return }
         guard let inTex = cubeNode.inTex else { return }
         guard let altTex else { return }
 
-        let indexCount = indexBuf.length / MemoryLayout<UInt32>.stride
-
         renderCmd.setTriangleFillMode(platoFlo.wire ? .lines : .fill)
         renderCmd.setRenderPipelineState(renderPipe)
-        renderCmd.setDepthStencilState(pipeline.depthStencil(write: true))
-        
-        renderCmd.setVertexBuffer(platonic.platoModel.vertexBuf, offset: 0, index: 0)
         renderCmd.setVertexBuffer(uniformBuf, offset: 0, index: 1)
         renderCmd.setFragmentBuffer(uniformBuf, offset: 0, index: 1)
 
         renderCmd.setFragmentTexture(cubeTex, index: 0)
         renderCmd.setFragmentTexture(inTex, index: 1)
         renderCmd.setFragmentTexture(altTex, index: 2)
-        renderCmd.drawIndexedPrimitives(
-            type              : .triangle,
-            indexCount        : indexCount,
-            indexType         : .uint32,
-            indexBuffer       : indexBuf,
-            indexBufferOffset : 0)
-        
-        platonic.nextCounter()
+
+        platoMetal.drawMesh(renderCmd)
+        platoMetal.platoModel.nextCounter() //????
     }
 
     override public func updateTextures() {

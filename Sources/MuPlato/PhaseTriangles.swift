@@ -5,18 +5,18 @@ import Metal
 import MetalKit
 import MuVision
 
-class PlatoModel: MeshModel {
+class PhaseTriangles {
 
     static var logVertex = false
 
     var triRanges: [TriRange]
+    var triCount: Int { return triRanges.count * 3 }
+    var vertices: [PlatoVertex]!
+    var indices: [UInt32]!
 
-    init(_ device: MTLDevice,
-         _ metalVD: MTLVertexDescriptor,
-         _ triRanges: [TriRange]) {
+    init(_ triRanges: [TriRange]) {
 
         self.triRanges = triRanges
-        super.init(device,metalVD)
     }
 
     func pnt4f(_ p: Float3,_ w: Float) -> Pnt4 {

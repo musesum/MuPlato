@@ -9,9 +9,8 @@ import simd
 
 open class PlatoPipeline: Pipeline {
 
-    var platoNode: MetalNode!    
+    var platoNode: PlatoNode!    
     var cameraNode: MetalNode!
-    var platonic: Platonic!
 
     var motion: Motion?
     #if os(visionOS)
@@ -30,7 +29,6 @@ open class PlatoPipeline: Pipeline {
         
         super.init(bounds)
         motion = Motion.shared
-        platonic = Platonic(device, metalVD)
         setupPipeline(Flo.root˚)
     }
 
@@ -55,7 +53,7 @@ open class PlatoPipeline: Pipeline {
             }
         }
         if platoFlo.show {
-            platoNode = MetNodePlato(self, colorFlo.getMix)
+            platoNode = PlatoNode(self, colorFlo.getMix)
         }
         #if os(visionOS)
         #else
@@ -70,7 +68,7 @@ open class PlatoPipeline: Pipeline {
 
     public func pause() {
 
-        if let counter = platonic?.counter {
+        if let counter = platoNode.platoMetal.platoModel.counter {
             counter.paused = !counter.paused
             print(counter.paused ? "paused counter: \(counter.counter)" : "running")
         }

@@ -2,17 +2,17 @@
 //  Copyright © 2023 DeepMuse All rights reserved.
 
 
-extension Platonic { 
+extension PhaseTriangles {
 
     /// phase 0
-    func buildZeroTetra() -> PlatoModel {
+    static func buildZeroTetra() -> PhaseTriangles {
 
         let Z_T0 = VertexRange(Z, T0, .Z_T0)
         let Z_T1 = VertexRange(Z, T1, .Z_T1)
         let Z_T2 = VertexRange(Z, T2, .Z_T2)
         let Z_T3 = VertexRange(Z, T3, .Z_T3)
 
-        return PlatoModel(device, metalVD, [
+        return PhaseTriangles([
 
             TriRange(Z_T0, Z_T1, Z_T2),
             TriRange(Z_T0, Z_T1, Z_T3),
@@ -22,14 +22,14 @@ extension Platonic {
     }
 
     /// phase 1
-    func buildTetraCubeA() -> PlatoModel {
+    static func buildTetraCubeA() -> PhaseTriangles {
 
         let T0_T012 = VertexRange(T0, (T0,T1,T2), .T0_T012)
         let T1_T013 = VertexRange(T1, (T0,T1,T3), .T1_T013)
         let T2_T023 = VertexRange(T2, (T0,T2,T3), .T2_T023)
         let T3_T123 = VertexRange(T3, (T1,T2,T3), .T3_T123)
 
-        return PlatoModel(device, metalVD, [
+        return PhaseTriangles([
 
             TriRange(T0, T0_T012, T1), // 0⟹1
             TriRange(T0, T1_T013, T1), // 0⟹1
@@ -48,14 +48,14 @@ extension Platonic {
     }
 
     /// phase 2
-    func buildTetraCubeB() -> PlatoModel {
+    static func buildTetraCubeB() -> PhaseTriangles {
 
         let T012_C0 = VertexRange((T0,T1,T2), C0, .T012_C0)
         let T013_C1 = VertexRange((T0,T1,T3), C1, .T013_C1)
         let T023_C2 = VertexRange((T0,T2,T3), C2, .T023_C2)
         let T123_C3 = VertexRange((T1,T2,T3), C3, .T123_C3)
 
-        return PlatoModel(device, metalVD, [
+        return PhaseTriangles([
 
             TriRange(T0, T012_C0, T1),
             TriRange(T0, T013_C1, T1),
@@ -73,7 +73,7 @@ extension Platonic {
     }
 
     /// phase 3
-    func buildCubeOctA() -> PlatoModel {
+    static func buildCubeOctA() -> PhaseTriangles {
 
         let T0_O0 = VertexRange(T0, O0, .T0_O0)
         let T1_O1 = VertexRange(T1, O1, .T1_O1)
@@ -82,7 +82,7 @@ extension Platonic {
         let T1_O4 = VertexRange(T1, O4, .T1_O4)
         let T3_O5 = VertexRange(T3, O5, .T3_O5)
 
-        return PlatoModel(device, metalVD, [
+        return PhaseTriangles([
 
             TriRange(T0, T0_O0, C1), // 0⟹1
             TriRange(T0, T0_O0, C2), // 0⟹1
@@ -119,7 +119,7 @@ extension Platonic {
     }
 
     // phase 4
-    func buildCubeOctB() -> PlatoModel {
+    static func buildCubeOctB() -> PhaseTriangles {
 
         let T0_O2 = VertexRange(T0, O2, .T0_O2)
         let T1_O1 = VertexRange(T1, O1, .T1_O1)
@@ -130,7 +130,7 @@ extension Platonic {
         let C2_O0 = VertexRange(C2, O0, .C2_O0)
         let C3_O3 = VertexRange(C3, O3, .C3_O3)
 
-        return PlatoModel(device, metalVD, [
+        return PhaseTriangles([
 
             TriRange(C0_O3, O2, T2_O2), // 1⟹0
             TriRange(C0_O3, O2, T0_O2), // 1⟹0
@@ -164,7 +164,7 @@ extension Platonic {
     }
 
     /// phase 5
-    func buildOctCube() -> PlatoModel {
+    static func buildOctCube() -> PhaseTriangles {
 
         let O2_T0 = VertexRange(O2, T0, .O2_T0)
         let O1_T1 = VertexRange(O1, T1, .O1_T1)
@@ -175,7 +175,7 @@ extension Platonic {
         let O0_C2 = VertexRange(O0, C2, .O0_C2)
         let O3_C3 = VertexRange(O3, C3, .O3_C3)
 
-        return PlatoModel(device, metalVD, [
+        return PhaseTriangles([
 
             TriRange(O0_C2, O0, O2_T0), // 0⟹1
             TriRange(O0_C1, O0, O1_T3), // 0⟹1
@@ -209,7 +209,7 @@ extension Platonic {
     }
 
     /// phase 6
-    func buildCubeDodecA() -> PlatoModel {
+    static func buildCubeDodecA() -> PhaseTriangles {
 
         let O4_D0 = VertexRange(O4, D0, .O4_D0)
         let O4_D1 = VertexRange(O4, D1, .O4_D1)
@@ -231,7 +231,7 @@ extension Platonic {
         let O4_D01 = VertexRange(mid: (O4_D0, O4_D1), .O4_D01)
         let O5_DAB = VertexRange(mid: (O5_DA, O5_DB), .O5_DAB)
 
-        return PlatoModel(device, metalVD, [
+        return PhaseTriangles([
             //  m⟹n                    0⟹1
             TriRange(T0, O0_D45, C1), TriRange(T0, O0_D45, O0_D5),
             TriRange(C1, O0_D4 , T3), TriRange(C1, O0_D45, O0_D4),
@@ -261,7 +261,7 @@ extension Platonic {
     }
 
     /// phase 7
-    func buildCubeDodecB() -> PlatoModel {
+    static func buildCubeDodecB() -> PhaseTriangles {
 
         let D45_D5 = VertexRange((D4,D5), D5, .D45_D5)
         let D23_D2 = VertexRange((D2,D3), D2, .D23_D2)
@@ -270,7 +270,7 @@ extension Platonic {
         let D01_D1 = VertexRange((D0,D1), D1, .D01_D1)
         let DAB_DA = VertexRange((DA,DB), DA, .DAB_DA)
 
-        return PlatoModel(device, metalVD, [
+        return PhaseTriangles([
 
             TriRange(T0, D45_D5, D5), // 1⟹0
             TriRange(T1, D01_D1, D1), // 1⟹0
@@ -326,7 +326,7 @@ extension Platonic {
     }
 
     /// phase 8
-    func buildDodecFaceA() -> PlatoModel {
+    static func buildDodecFaceA() -> PhaseTriangles {
 
         let T0_I0 = VertexRange(T0, I0, .T0_I0)
         let T0_I1 = VertexRange(T0, I1, .T0_I1)
@@ -341,7 +341,7 @@ extension Platonic {
         let T3_IA = VertexRange(T3, IA, .T3_IA)
         let C0_IB = VertexRange(C0, IB, .C0_IB)
 
-        return PlatoModel(device, metalVD, [
+        return PhaseTriangles([
 
             TriRange(T0, T0_I0, D0), // 0⟹1
             TriRange(T0, T0_I1, D5), // 0⟹1
@@ -409,7 +409,7 @@ extension Platonic {
     }
 
     /// phase 9
-    func buildDodecFaceB() -> PlatoModel {
+    static func buildDodecFaceB() -> PhaseTriangles {
 
         let T0_T0D0 = VertexRange(T0, (T0,D0), .T0_T0D0)
         let D0_D0D1 = VertexRange(D0, (D0,D1), .D0_D0D1)
@@ -452,7 +452,7 @@ extension Platonic {
         let D4_D4D5 = VertexRange(D4, (D4,D5), .D4_D4D5)
         let D5_D5T0 = VertexRange(D5, (D5,T0), .D5_D5T0)
 
-        return PlatoModel(device, metalVD, [
+        return PhaseTriangles([
             //  m⟹n                   0⟹1
             TriRange(T0_T0D0, I0, D0),  TriRange(T0, I0, T0_T0D0),
             TriRange(D0_D0D1, I0, D1),  TriRange(D0, I0, D0_D0D1),
@@ -518,7 +518,7 @@ extension Platonic {
     }
 
     ///  phase 10
-    func buildDodecIcosa() -> PlatoModel {
+    static func buildDodecIcosa() -> PhaseTriangles {
 
         let T0_I019 = VertexRange(T0, (I0,I1,I9), .T0_I019)
         let T1_I6B8 = VertexRange(T1, (I6,IB,I8), .T1_I6B8)
@@ -582,7 +582,7 @@ extension Platonic {
         let D4_D5IA9 = VertexRange((D4_I79A, D5_I19A), (IA, I9), .D4_D5IA9)
         let D5_T0I19 = VertexRange((D5_I19A, T0_I019), (I1, I9), .D5_T0I19)
 
-        return PlatoModel(device, metalVD, [
+        return PhaseTriangles([
             //  m⟹n                        0⟹1
             TriRange(T0_D0I09, I0, D0_I089), TriRange(T0_I019, I0, T0_D0I09),
             TriRange(D0_D1I08, I0, D1_I08B), TriRange(D0_I089, I0, D0_D1I08),
@@ -647,9 +647,9 @@ extension Platonic {
         ])
     }
 
-    func buildIcosa() -> PlatoModel {
+    static func buildIcosa() -> PhaseTriangles {
 
-        return PlatoModel(device, metalVD, [
+        return PhaseTriangles([
 
             TriRange(I0, I1, I2), TriRange(I0, I2, IB),
             TriRange(I0, IB, I8), TriRange(I0, I8, I9),
@@ -664,9 +664,9 @@ extension Platonic {
         ])
     }
 
-    func buildCube() -> PlatoModel {
+    static func buildCube() -> PhaseTriangles {
 
-        return PlatoModel(device, metalVD, [
+        return PhaseTriangles([
 
             TriRange(T3, C1, T0), TriRange(T0, T3, C2),
             TriRange(T0, C2, C0), TriRange(C0, C2, T2),
@@ -677,7 +677,7 @@ extension Platonic {
         ])
     }
 
-    func buildPlatonic(_ phase: Int) -> PlatoModel {
+    static func build(_ phase: Int) -> PhaseTriangles {
 
         switch phase {
             case  0: return buildZeroTetra ()
@@ -694,10 +694,5 @@ extension Platonic {
             default: return buildZeroTetra ()
         }
     }
-    func buildAll() {
-        platoModels.removeAll()
-        for phase in 0 ..< counter.phases {
-            platoModels.append(buildPlatonic(phase))
-        }
-    }
+
 }

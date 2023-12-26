@@ -4,8 +4,7 @@ import Foundation
 
 // index ranged  0...1
 
-struct PlatoVertex {
-    static let count = 5 // used by makePipeline to set stride
+public struct PlatoVertex {
     var pos0: SIMD4<Float> // position at lower bound 0...1
     var pos1: SIMD4<Float> // position at upper bound 0...1
     var norm0: SIMD4<Float> // normal at lower bound 0...1
@@ -13,7 +12,7 @@ struct PlatoVertex {
     var vertId: Float
     var faceId: Float
     var harmonic: Float
-    var reserved: Float
+    var padding: Float
 
     init() {
         pos0 = .zero
@@ -23,7 +22,7 @@ struct PlatoVertex {
         vertId = 0
         faceId = 0
         harmonic = 0
-        reserved = 0
+        padding = 0
     }
 }
 
