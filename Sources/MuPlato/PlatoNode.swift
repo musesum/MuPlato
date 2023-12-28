@@ -1,10 +1,5 @@
 //  created by musesum on 3/16/23.
 
-import Foundation
-import simd
-
-import QuartzCore
-import Metal
 import MetalKit
 import MuMetal
 import MuVision
@@ -35,129 +30,6 @@ enum PlatoStyle: Int {
     }
 }
 
-public class PlatoModel: MeshModel<PlatoVertex> {
-
-    var phaseTriangles: PhaseTriangles!
-    var platoPhases = [PhaseTriangles]()
-    let platoFlo   = PlatoFlo.shared
-    let cameraFlo = CameraFlo.shared
-    var counter: PlatoCounter!
-
-    var convex = Float(0.95)
-
-    override public init(_ device: MTLDevice,
-                         _ nameFormats: [VertexNameFormat],
-                         _ vertexStride: Int) {
-
-        super.init(device, nameFormats, vertexStride)
-
-        self.counter = PlatoCounter(8000, cameraFlo.stream, harmonic: 4)
-        buildHarmonic()
-        buildPhase()
-    }
-    func updatePlatoBuffers() {
-        let triCount = phaseTriangles.triCount
-        let verticesLen = triCount * MemoryLayout<PlatoVertex>.stride
-        let indicesLen  = triCount * MemoryLayout<UInt32>.size
-        updateBuffers(verticesLen, indicesLen)
-    }
-
-    func buildHarmonic() {
-        TriRange.reset()
-        // buildAll
-        platoPhases.removeAll()
-        for phase in 0 ..< counter.phases {
-            platoPhases.append(PhaseTriangles.build(phase))
-        }
-
-        for phaseIndex in 0 ..< platoPhases.count {
-            let phase = platoPhases[phaseIndex]
-            _ = phase.trisect(counter.harmonic)
-        }
-        for phaseIndex in 0 ..< platoPhases.count {
-            let phase = platoPhases[phaseIndex]
-            logBuildCounter(phaseIndex)
-            for tri in phase.triRanges {
-                tri.setId(phaseIndex)
-            }
-        }
-        func logBuildCounter(_ i: Int) {
-            //print("build phase: \(i) harmonic: \(counter.harmonic )")
-        }
-    }
-    func updateSubdivisions() -> Bool {
-        if convex != platoFlo.convex {
-            convex = platoFlo.convex
-            phaseTriangles.updateTriangles() //????
-            return true
-        }
-        return false
-    }
-    func nextCounter() {
-
-//????        if counter.phase != platoFlo.phase {
-//            counter.setPhase(platoFlo.phase)
-//            counter.next()
-//            buildHarmonic()
-//            buildPhase()
-//
-//        } else 
-
-        if platoFlo.morph {
-
-            counter.next()
-
-            if counter.newHarmonic {
-                buildHarmonic()
-            }
-            if counter.newPhase {
-                buildPhase()
-            }
-        }
-    }
-    func buildPhase() {
-        logCounter()
-        phaseTriangles = platoPhases[counter.phase]
-        phaseTriangles.updateTriangles()
-        vertices = phaseTriangles.vertices
-        indices = phaseTriangles.indices
-        updatePlatoBuffers()
-    }
-    func logCounter() {
-        print("phase: \(counter.phase)  harmonic: \(counter.harmonic) counter: \(counter.counter)  \(counter.increasing ? ">" : "<")")
-    }
-}
-public class PlatoMetal: MeshMetal {
-
-    var platoModel : PlatoModel!
-
-    init(_ device: MTLDevice) {
-
-        super.init(device: device, compare: .less, winding: .clockwise)
-
-        let nameFormats: [VertexNameFormat] = [
-            ("pos0"    , .float4),
-            ("pos1"    , .float4),
-            ("norm0"   , .float4),
-            ("norm1"   , .float4),
-            ("vertId"  , .float),
-            ("faceId"  , .float),
-            ("harmonic", .float),
-            ("reserved", .float),
-        ]
-        let vertexStride = MemoryLayout<PlatoVertex>.stride
-        platoModel = PlatoModel(device, nameFormats, vertexStride)
-        makeMetalVD(nameFormats,vertexStride)
-        mtkMesh = try! MTKMesh(mesh: platoModel.mdlMesh, device: device)
-    }
-    func updateUniforms() {
-
-        if platoModel.updateSubdivisions() {
-            platoModel.updatePlatoBuffers()
-            mtkMesh = try! MTKMesh(mesh: platoModel.mdlMesh, device: device) //????
-        }
-    }
-}
 
 public class PlatoNode: RenderNode {
 
@@ -225,10 +97,11 @@ public class PlatoNode: RenderNode {
         let projectModel = perspective * (platoView * identity)
 
         platoMetal.updateUniforms()
-        let platoFlo = platoMetal.platoModel.platoFlo
+        let platoFlo = platoMetal.model.platoFlo
 
+        let range = platoMetal.model.counter.range01
         var platoUniforms = PlatoUniforms(
-            range       : platoMetal.platoModel.counter.range01,
+            range       : range,
             depth       : platoFlo.convex,
             passthru    : platoFlo.passthru,
             shadowWhite : platoFlo.shadowWhite,
@@ -262,7 +135,9 @@ public class PlatoNode: RenderNode {
         renderCmd.setFragmentTexture(altTex, index: 2)
 
         platoMetal.drawMesh(renderCmd)
-        platoMetal.platoModel.nextCounter() //????
+        if platoMetal.model.nextCounter() == true {
+            platoMetal.updateMesh()
+        }
     }
 
     override public func updateTextures() {

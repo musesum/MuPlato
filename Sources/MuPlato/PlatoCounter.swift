@@ -5,94 +5,92 @@ import Foundation
 
 class PlatoCounter {
 
+    enum Direction { case up, down }
+    var counterDirection = Direction.up
+    var harmonicDirection = Direction.up
+
     var counter = 0    // infinite counter, always rising
     var harmonic = 0   // current triangle subdivision
-    var phase = 0      // current phase of morphing 0...11
-    var step = 0
-    var newPhase = true
+    var phase = 0      // current phase of running 0...11
 
+    var newPhase = true
     var newHarmonic = true
+
     var paused = false
     var firstTime = true
-    var increasing = true
 
-    let steps: Int
+    let phaseSteps: Int
+    var cycleSteps: Int
     let harmonics = 6  // maximum number of subdivisions
-    public let phases = 11    // number of morphing phases
+    public let phases = 11    // number of running phases
 
-    let phaseMod: Int
-    let harmoDiv: Int
-    let harmoMod: Int
+    var range01 : Float = 0
 
-    var range01: Float { Float(step) / Float(steps) }
-
-    init(_ counter: Int, _ viaFrame: Bool, harmonic: Int = 0) {
-        self.counter = counter
+    init(steps: Int, phase: Int, harmonic: Int) {
+        self.phaseSteps = steps
+        self.cycleSteps = phaseSteps * phases
         self.harmonic = harmonic
-        self.steps = viaFrame ? 120 : 200
-
-        phaseMod = phases * 2
-        harmoDiv = steps * phaseMod
-        harmoMod = harmonics * 2
-        //logConstants()
+        self.phase = phase
+        self.counter = phase * phaseSteps
         //test()
     }
 
-    func setPhase(_ p: CGPoint) {
-        let newStep  = Int(CGFloat(harmoDiv) * p.x)
-        let newHarmo = Int(CGFloat(harmoMod) * p.y)
-        counter = newHarmo * newStep
+    func setPhaseHarmonic(_ phaseNow: Int,
+                          _ harmonicNow: Int) {
+        phase  = max(0, min(phaseNow, phases))
+        harmonic = max(0, min(harmonicNow, harmonics))
+        counter = (phase * phaseSteps)
     }
-    func next(_ count: Int? = nil) {
+    func next() {
 
-        if firstTime {
-            firstTime = false
+        counter += counterDirection == .up ? 1 : -1
+        if counter >= cycleSteps {
+
+            counterDirection = .down
+            counter = cycleSteps - 1
+
+        } else if counter < 0 {
+
+            counterDirection = .up
+            counter = 0
+
+            // new harmonic
+
+            harmonic += harmonicDirection == .up ? 1 : -1
+            if harmonic >= harmonics {
+                harmonic = 5
+                harmonicDirection = .down
+                newHarmonic = true
+
+            } else if harmonic < 0 {
+                harmonic = 0
+                harmonicDirection = .up
+                newHarmonic = true
+            }
+        }
+        if phase != counter / phaseSteps {
+            phase = counter / phaseSteps
             newPhase = true
-            newHarmonic = true
-            return
-        }
-        if paused {
-            newPhase = false
-            newHarmonic = false
-            return
         }
 
-        counter = count ?? counter + 1
-
-        step = counter % steps
-
-        let phasePrev = phase
-        phase = (counter / steps) % phaseMod
-        if phase >= phases {
-            phase = phaseMod - phase -  1
-            step = steps - step
-            increasing = false
-        } else {
-            increasing = true
-        }
-        newPhase = phase != phasePrev
-
-        let harmonicPrev = harmonic
-        harmonic = (counter / harmoDiv) % harmoMod
-        if harmonic >= harmonics {
-            harmonic = harmoMod - harmonic
-        }
-        newHarmonic = harmonic != harmonicPrev
-        newPhase = newPhase || newHarmonic
-        
+        range01 = Float(counter % phaseSteps) / Float(phaseSteps)
         logCounter()
     }
-
-    func logConstants() {
-        print("phaseMod:\(phaseMod):  harmoDiv:\(harmoDiv)  harmoMod:\(harmoMod)  steps:\(steps)  n:\(range01.digits(3...3))")
+    func logCountNow() {
+        let phaseStr = "phase: \(phase) "
+        let harmonicDir = harmonicDirection == .up ? ">" : "<"
+        let harmonicStr = "harmonic: \(harmonic) \(harmonicDir) "
+        let counterDir = counterDirection == .up ? ">" : "<"
+        let counterStr = "counter: \(counter) \(counterDir)"
+        print(phaseStr + harmonicStr + counterStr)
     }
+
     func logCounter() {
-        if phase != 100 { return }
-            print("\(counter):  h: \(harmonic)  p: \(phase)  s: \(String(step).padding(toLength: 4, withPad: " ", startingAt: 0))  n: \(range01.digits(3...3))")
+//        print("\(counter):  harmonic: \(harmonic)  phase: \(phase)  range01: \(range01.digits(3...3))")
     }
     func test() {
-        for i in stride(from:    0, to:   210, by:  1) { next(i) } ; print("_1_")
-        for i in stride(from: 1290, to:  1410, by:  1) { next(i) } ; print("_2_")
-        for i in stride(from: 2000, to: 40000, by: 99) { next(i) } ; print("_3_")
+        for i in stride(from:    0, to:   210, by:  1) { counter = i; next() } ; print("_1_")
+        for i in stride(from: 1290, to:  1410, by:  1) { counter = i; next() } ; print("_2_")
+        for i in stride(from: 2000, to: 40000, by: 99) { counter = i; next() } ; print("_3_")
     }
 }

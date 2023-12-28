@@ -12,7 +12,7 @@ public struct PlatoVertex {
     var vertId: Float
     var faceId: Float
     var harmonic: Float
-    var padding: Float
+    var phase: Float
 
     init() {
         pos0 = .zero
@@ -22,7 +22,7 @@ public struct PlatoVertex {
         vertId = 0
         faceId = 0
         harmonic = 0
-        padding = 0
+        phase = 0
     }
 }
 

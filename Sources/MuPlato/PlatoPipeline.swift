@@ -68,7 +68,7 @@ open class PlatoPipeline: Pipeline {
 
     public func pause() {
 
-        if let counter = platoNode.platoMetal.platoModel.counter {
+        if let counter = platoNode.platoMetal.model.counter {
             counter.paused = !counter.paused
             print(counter.paused ? "paused counter: \(counter.counter)" : "running")
         }
