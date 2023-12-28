@@ -134,6 +134,7 @@ public class PlatoNode: RenderNode {
         renderCmd.setFragmentTexture(inTex, index: 1)
         renderCmd.setFragmentTexture(altTex, index: 2)
 
+        renderCmd.setCullMode(.none) // creates artifacts
         platoMetal.drawMesh(renderCmd)
         if platoMetal.model.nextCounter() == true {
             platoMetal.updateMesh()

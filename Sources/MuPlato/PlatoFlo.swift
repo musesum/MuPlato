@@ -23,20 +23,20 @@ open class PlatoFlo {
     
     init() {
         
-        let plato = Flo.root˚.bind("model.canvas.plato")
-        let extra  = plato.bind("extra")
+        let plato = Flo.root˚.bind("model.plato")
+        let more  = plato.bind("more")
+        let show = Flo.root˚.bind("model.more.show")
 
         passthru˚ = plato.bind("passthru") { f,_ in self.passthru = f.float }
+        invert˚   = plato.bind("invert"  ) { f,_ in self.invert   = f.float }
         shadow˚   = plato.bind("shadow"  ) { f,_ in self.shadow   = f.cgPoint }
         zoom˚     = plato.bind("zoom"    ) { f,_ in self.zoom     = f.float }
         convex˚   = plato.bind("convex"  ) { f,_ in self.convex   = f.float }
-        show˚     = plato.bind("show"    ) { f,_ in self.show     = f.bool  }
 
-        wire˚     = extra.bind("wire"    ) { f,_ in self.wire     = f.bool  }
-        phase˚    = extra.bind("phase"   ) { f,_ in self.phase    = f.int }
-        harmonic˚ = extra.bind("harmonic") { f,_ in self.harmonic = f.int }
-        invert˚   = extra.bind("invert"  ) { f,_ in self.invert   = f.float }
-        run˚      = plato.bind("run"     ) { f,_ in self.run      = f.bool  }
-
+        wire˚     = more.bind("wire"    ) { f,_ in self.wire     = f.bool  }
+        phase˚    = more.bind("phase"   ) { f,_ in self.phase    = f.int }
+        harmonic˚ = more.bind("harmonic") { f,_ in self.harmonic = f.int }
+        run˚      = more.bind("run"     ) { f,_ in self.run      = f.bool  }
+        show˚     = show.bind("plato"  ) { f,_ in self.show      = f.bool  }
     }
 }

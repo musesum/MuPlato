@@ -41,7 +41,7 @@ open class PlatoPipeline: Pipeline {
             cameraNode = CameraNode(root˚, self, "camera", "compute.camera")
             //?? nodes.append(cameraNode)
         }
-        if cubeFlo.back {
+        if cubeFlo.canvas {
             cubemapNode = CubemapNode(self, cameraFlo.stream)
             if let cubemapNode {
                 let zero = Float.zero

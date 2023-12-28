@@ -58,6 +58,7 @@ public class PlatoModel: MeshModel<PlatoVertex> {
     func updateConvex() -> Bool {
         if convex != platoFlo.convex {
             convex = platoFlo.convex
+            buildPhase()
             return true
         }
         return false

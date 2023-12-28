@@ -9,14 +9,15 @@ open class CubeFlo {
 
     private var motion˚ : Flo? ; var motion = false
     private var rotate˚ : Flo? ; var rotate = CGPoint.zero
-    private var back˚   : Flo? ; var back   = true
+    private var canvas˚ : Flo? ; var canvas = true
     private var show˚   : Flo? ; var show   = true
 
     init() {
-        let cube = Flo.root˚.bind("model.canvas.cube")
-        motion˚ = cube.bind("motion" ) { f,_ in self.motion = f.bool }
-        rotate˚ = cube.bind("rotate" ) { f,_ in self.rotate = f.cgPoint }
-        back˚   = cube.bind("back"   ) { f,_ in self.back   = f.bool }
-        show˚   = cube.bind("show"   ) { f,_ in self.show   = f.bool }
+        let more = Flo.root˚.bind("model.more")
+        let show = Flo.root˚.bind("model.more.show")
+        motion˚ = more.bind("motion" ) { f,_ in self.motion = f.bool }
+        rotate˚ = more.bind("rotate" ) { f,_ in self.rotate = f.cgPoint }
+        canvas˚ = show.bind("canvas" ) { f,_ in self.canvas = f.bool }
+        show˚   = show.bind("cubemap") { f,_ in self.show   = f.bool }
     }
 }

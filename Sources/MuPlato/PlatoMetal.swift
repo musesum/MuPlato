@@ -9,7 +9,7 @@ public class PlatoMetal: MeshMetal {
 
     init(_ device: MTLDevice) {
 
-        super.init(device: device, compare: .greater, winding: .counterClockwise)
+        super.init(device: device, compare: .greater, winding: .clockwise)
 
         let nameFormats: [VertexNameFormat] = [
             ("pos0"    , .float4),
@@ -29,7 +29,7 @@ public class PlatoMetal: MeshMetal {
     func updateUniforms() {
 
         if model.updateConvex() {
-            model.updatePlatoBuffers()
+            updateMesh()
         }
     }
     func updateMesh() {
