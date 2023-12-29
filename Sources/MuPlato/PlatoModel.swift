@@ -25,7 +25,6 @@ public class PlatoModel: MeshModel<PlatoVertex> {
         buildPhase()
     }
     func updatePlatoBuffers() {
-        //???? let triCount = phaseTriangles.triCount
         let verticesLen = vertices.count * MemoryLayout<PlatoVertex>.stride
         let indicesLen  = indices.count * MemoryLayout<UInt32>.size
         updateBuffers(verticesLen, indicesLen)

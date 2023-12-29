@@ -26,7 +26,7 @@ public class PlatoMetal: MeshMetal {
         makeMetalVD(nameFormats,vertexStride)
         updateMesh()
     }
-    func updateUniforms() {
+    func updateMetal() {
 
         if model.updateConvex() {
             updateMesh()

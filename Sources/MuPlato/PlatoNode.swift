@@ -96,7 +96,6 @@ public class PlatoNode: RenderNode {
         let worldCamera = orientation.inverse * -cameraPos
         let projectModel = perspective * (platoView * identity)
 
-        platoMetal.updateUniforms()
         let platoFlo = platoMetal.model.platoFlo
 
         let range = platoMetal.model.counter.range01
@@ -116,6 +115,7 @@ public class PlatoNode: RenderNode {
 
         let uniformLen = MemoryLayout<PlatoUniforms>.stride
         memcpy(uniformBuf.contents(), &platoUniforms, uniformLen)
+        platoMetal.updateMetal()
     }
 
     override public func renderNode(_ renderCmd: MTLRenderCommandEncoder) {
@@ -135,6 +135,9 @@ public class PlatoNode: RenderNode {
         renderCmd.setFragmentTexture(altTex, index: 2)
 
         renderCmd.setCullMode(.none) // creates artifacts
+
+        renderCmd.setDepthStencilState(pipeline.depthStencil(write: true))
+
         platoMetal.drawMesh(renderCmd)
         if platoMetal.model.nextCounter() == true {
             platoMetal.updateMesh()
