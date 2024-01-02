@@ -3,10 +3,13 @@
 import MetalKit
 import MuMetal
 import MuVision
+#if os(visionOS)
+import CompositorServices
+#endif
 
 struct PlatoUniforms {
     var range        : Float
-    var depth        : Float
+    var convex       : Float
     var passthru     : Float
     var shadowWhite  : Float
     var shadowDepth  : Float
@@ -15,7 +18,6 @@ struct PlatoUniforms {
     var projectModel : matrix_float4x4
     var worldCamera  : vector_float4
     var identity     : matrix_float4x4
-    var inverse      : matrix_float4x4
 }
 
 enum PlatoStyle: Int {
@@ -33,8 +35,8 @@ enum PlatoStyle: Int {
 
 public class PlatoNode: RenderNode {
 
-    var platoMetal : PlatoMetal!
-    var uniformBuf : MTLBuffer!
+    var metal      : PlatoMetal!
+    var uniforms   : PlatoUniforms?
     let platoFlo   = PlatoFlo.shared
     let cubeFlo    = CubeFlo.shared
     var platoStyle = PlatoStyle.reflect
@@ -45,7 +47,7 @@ public class PlatoNode: RenderNode {
                 _ getPal: @escaping GetTextureFunc) {
         
         super.init(pipeline, "plato", "render.plato", .rendering)
-        self.platoMetal = PlatoMetal(pipeline.device)
+        self.metal = PlatoMetal(pipeline.device)
         self.filename = filename
         self.getPal = getPal
 
@@ -56,7 +58,8 @@ public class PlatoNode: RenderNode {
 
     func makeResources() {
 
-        uniformBuf = pipeline.device.makeBuffer(
+        metal.eyeBuf = UniformEyeBuf(metal.device, "Plato", far: false)
+        metal.uniformBuf = pipeline.device.makeBuffer(
             length: MemoryLayout<PlatoUniforms>.stride,
             options: .cpuCacheModeWriteCombined)!
     }
@@ -73,9 +76,9 @@ public class PlatoNode: RenderNode {
         let pd = MTLRenderPipelineDescriptor()
         pd.vertexFunction   = library.makeFunction(name: vertexName)
         pd.fragmentFunction = library.makeFunction(name: fragmentName)
-        pd.vertexDescriptor = platoMetal.metalVD
+        pd.vertexDescriptor = metal.metalVD
 
-        pd.colorAttachments[0].pixelFormat = .bgra8Unorm
+        pd.colorAttachments[0].pixelFormat = MetalRenderPixelFormat
         pd.depthAttachmentPixelFormat = .depth32Float
 
         do {
@@ -86,7 +89,7 @@ public class PlatoNode: RenderNode {
         }
     }
     
-    func updateUniforms() {
+    override public func updateUniforms() {
 
         guard let orientation = Motion.shared.sceneOrientation else { return }
 
@@ -96,12 +99,12 @@ public class PlatoNode: RenderNode {
         let worldCamera = orientation.inverse * -cameraPos
         let projectModel = perspective * (platoView * identity)
 
-        let platoFlo = platoMetal.model.platoFlo
+        let platoFlo = metal.model.platoFlo
 
-        let range = platoMetal.model.counter.range01
-        var platoUniforms = PlatoUniforms(
+        let range = metal.model.counter.range01
+        uniforms = PlatoUniforms(
             range       : range,
-            depth       : platoFlo.convex,
+            convex      : platoFlo.convex,
             passthru    : platoFlo.passthru,
             shadowWhite : platoFlo.shadowWhite,
             shadowDepth : platoFlo.shadowDepth,
@@ -110,14 +113,24 @@ public class PlatoNode: RenderNode {
 
             projectModel : projectModel,
             worldCamera  : worldCamera,
-            identity     : identity,
-            inverse      : identity.inverse.transpose)
+            identity     : identity)
 
         let uniformLen = MemoryLayout<PlatoUniforms>.stride
-        memcpy(uniformBuf.contents(), &platoUniforms, uniformLen)
-        platoMetal.updateMetal()
+        memcpy(metal.uniformBuf.contents(), &uniforms, uniformLen)
+        metal.updateMetal()
     }
+#if os(visionOS)
 
+    /// Update projection and rotation
+    override public func updateUniforms(_ layerDrawable: LayerRenderer.Drawable) {
+
+        updateUniforms()
+        if let eyeBuf = metal.eyeBuf, let uniforms {
+            eyeBuf.updateEyeUniforms(layerDrawable, uniforms.projectModel)
+        }
+
+    }
+#endif
     override public func renderNode(_ renderCmd: MTLRenderCommandEncoder) {
 
         guard let cubeNode = pipeline.cubemapNode else { return }
@@ -127,8 +140,8 @@ public class PlatoNode: RenderNode {
 
         renderCmd.setTriangleFillMode(platoFlo.wire ? .lines : .fill)
         renderCmd.setRenderPipelineState(renderPipe)
-        renderCmd.setVertexBuffer(uniformBuf, offset: 0, index: 1)
-        renderCmd.setFragmentBuffer(uniformBuf, offset: 0, index: 1)
+        renderCmd.setVertexBuffer(metal.uniformBuf, offset: 0, index: 1)
+        renderCmd.setFragmentBuffer(metal.uniformBuf, offset: 0, index: 1)
 
         renderCmd.setFragmentTexture(cubeTex, index: 0)
         renderCmd.setFragmentTexture(inTex, index: 1)
@@ -136,17 +149,16 @@ public class PlatoNode: RenderNode {
 
         renderCmd.setCullMode(.none) // creates artifacts
 
-        renderCmd.setDepthStencilState(pipeline.depthStencil(write: true))
+        renderCmd.setDepthStencilState(pipeline.depthStencil(write: true)) //?????
 
-        platoMetal.drawMesh(renderCmd)
-        if platoMetal.model.nextCounter() == true {
-            platoMetal.updateMesh()
+        metal.drawMesh(renderCmd)
+        if metal.model.nextCounter() == true {
+            metal.updateMesh()
         }
     }
 
     override public func updateTextures() {
 
-        updateUniforms()
         altTex = altTex ?? makePaletteTex() // 256 false color palette
 
         if let altTex,
@@ -165,7 +177,7 @@ public class PlatoNode: RenderNode {
         func makePaletteTex() -> MTLTexture? {
 
             let paletteTex = TextureCache
-                .makeTexturePixelFormat(.bgra8Unorm,
+                .makeTexturePixelFormat(MetalRenderPixelFormat,
                                         size: CGSize(width: 256, height: 1),
                                         device: pipeline.device)
             return paletteTex

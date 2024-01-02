@@ -34,7 +34,7 @@ open class PlatoPipeline: Pipeline {
 
     public func setupPipeline(_ root˚: Flo) {
 
-        metalLayer.pixelFormat = .bgra8Unorm
+        metalLayer.pixelFormat = MetalComputePixelFormat
         metalLayer.framebufferOnly = true
 
         if cameraFlo.stream {
@@ -68,7 +68,7 @@ open class PlatoPipeline: Pipeline {
 
     public func pause() {
 
-        if let counter = platoNode.platoMetal.model.counter {
+        if let counter = platoNode.metal.model.counter {
             counter.paused = !counter.paused
             print(counter.paused ? "paused counter: \(counter.counter)" : "running")
         }
@@ -90,7 +90,7 @@ extension PlatoPipeline: DisplayLinkFire {
     func didFire() {
         if settingUp { return }
         motion?.updateDeviceOrientation()
-        drawNodes()
+        renderFrame()
     }
 
 }
