@@ -9,7 +9,17 @@ public class PlatoMetal: MeshMetal {
 
     init(_ device: MTLDevice) {
 
-        super.init(device: device, compare: .greater, winding: .clockwise)
+        //  compare write  cull   winding
+        // .greater true  .front .counterClockwise -- not showing
+        // .less    true  .front .counterClockwise -- jumbled
+        // .less    false .front .counterClockwise -- jumbled
+        // .less    false .front .clockwise        -- jumbled
+        // .less    false .back  .clockwise        -- jumbled
+        // .less    true  .back  .counterClockwise -- jumbled
+        // .less    true  .none  .counterClockwise -- metal good!
+
+        super.init(device, cull: .none, winding: .counterClockwise)
+        self.stencil = MeshMetal.stencil(device, .less, true)
 
         let nameFormats: [VertexNameFormat] = [
             ("pos0"    , .float4),
@@ -31,6 +41,7 @@ public class PlatoMetal: MeshMetal {
         if model.updateConvex() {
             updateMesh()
         }
+    
     }
     func updateMesh() {
         mtkMesh = try! MTKMesh(mesh: model.mdlMesh, device: device) 

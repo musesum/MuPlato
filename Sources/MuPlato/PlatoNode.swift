@@ -7,31 +7,6 @@ import MuVision
 import CompositorServices
 #endif
 
-struct PlatoUniforms {
-    var range        : Float
-    var convex       : Float
-    var passthru     : Float
-    var shadowWhite  : Float
-    var shadowDepth  : Float
-    var invert       : Float
-    var zoom         : Float
-    var projectModel : matrix_float4x4
-    var worldCamera  : vector_float4
-    var identity     : matrix_float4x4
-}
-
-enum PlatoStyle: Int {
-
-    case unknown = -1
-    case hidden  = 0
-    case color   = 1
-    case reflect = 2
-
-    public init(_ i: Int) {
-        self = PlatoStyle(rawValue: i) ?? .hidden
-    }
-}
-
 
 public class PlatoNode: RenderNode {
 
@@ -89,47 +64,42 @@ public class PlatoNode: RenderNode {
         }
     }
     
-    override public func updateUniforms() {
-
-        guard let orientation = Motion.shared.sceneOrientation else { return }
-
-        let perspective = pipeline.perspective()
-        let cameraPos = vector_float4([0, 0, -4 * platoFlo.zoom, 1])
-        let platoView = translation(cameraPos) * orientation
-        let worldCamera = orientation.inverse * -cameraPos
-        let projectModel = perspective * (platoView * identity)
-
+    func updatePlatoUniforms(_ worldCamera:  SIMD4<Float>) {
         let platoFlo = metal.model.platoFlo
-
-        let range = metal.model.counter.range01
         uniforms = PlatoUniforms(
-            range       : range,
+            range       : metal.model.counter.range01,
             convex      : platoFlo.convex,
             passthru    : platoFlo.passthru,
             shadowWhite : platoFlo.shadowWhite,
             shadowDepth : platoFlo.shadowDepth,
             invert      : platoFlo.invert,
             zoom        : platoFlo.zoom,
-
-            projectModel : projectModel,
-            worldCamera  : worldCamera,
-            identity     : identity)
+            worldCamera : worldCamera)
 
         let uniformLen = MemoryLayout<PlatoUniforms>.stride
         memcpy(metal.uniformBuf.contents(), &uniforms, uniformLen)
         metal.updateMetal()
     }
-#if os(visionOS)
+    override public func updateUniforms() {
+        guard let orientation = Motion.shared.sceneOrientation else { return }
 
+        let perspective = pipeline.perspective()
+        let cameraPos = vector_float4([0, 0, -4 * platoFlo.zoom, 1])
+        let platoView = translation(cameraPos) * orientation
+        let worldCamera = orientation.inverse * -cameraPos
+        let projectModel = perspective * platoView
+
+        updatePlatoUniforms(worldCamera)
+        metal.eyeBuf?.updateEyeUniforms(projectModel)
+    }
+#if os(visionOS)
     /// Update projection and rotation
     override public func updateUniforms(_ layerDrawable: LayerRenderer.Drawable) {
 
         updateUniforms()
-        if let eyeBuf = metal.eyeBuf, let uniforms {
-            eyeBuf.updateEyeUniforms(layerDrawable, uniforms.projectModel)
-        }
-
+        metal.eyeBuf?.updateEyeUniforms(layerDrawable)
     }
+    
 #endif
     override public func renderNode(_ renderCmd: MTLRenderCommandEncoder) {
 
@@ -137,6 +107,8 @@ public class PlatoNode: RenderNode {
         guard let cubeTex = cubeNode.cubeTex else { return }
         guard let inTex = cubeNode.inTex else { return }
         guard let altTex else { return }
+
+        metal.eyeBuf?.setUniformBuf(renderCmd)
 
         renderCmd.setTriangleFillMode(platoFlo.wire ? .lines : .fill)
         renderCmd.setRenderPipelineState(renderPipe)
@@ -147,11 +119,8 @@ public class PlatoNode: RenderNode {
         renderCmd.setFragmentTexture(inTex, index: 1)
         renderCmd.setFragmentTexture(altTex, index: 2)
 
-        renderCmd.setCullMode(.none) // creates artifacts
-
-        renderCmd.setDepthStencilState(pipeline.depthStencil(write: true)) //?????
-
         metal.drawMesh(renderCmd)
+
         if metal.model.nextCounter() == true {
             metal.updateMesh()
         }
