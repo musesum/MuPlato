@@ -33,7 +33,7 @@ public class PlatoNode: RenderNode {
 
     func makeResources() {
 
-        metal.eyeBuf = UniformEyeBuf(metal.device, "Plato", far: false)
+        metal.eyeBuf = UniformEyeBuf(pipeline.device, "Plato", far: false)
         metal.uniformBuf = pipeline.device.makeBuffer(
             length: MemoryLayout<PlatoUniforms>.stride,
             options: .cpuCacheModeWriteCombined)!
@@ -78,7 +78,7 @@ public class PlatoNode: RenderNode {
 
         let uniformLen = MemoryLayout<PlatoUniforms>.stride
         memcpy(metal.uniformBuf.contents(), &uniforms, uniformLen)
-        metal.updateMetal()
+        metal.updateMetal(pipeline.device)
     }
     override public func updateUniforms() {
         guard let orientation = Motion.shared.sceneOrientation else { return }
@@ -97,7 +97,7 @@ public class PlatoNode: RenderNode {
     override public func updateUniforms(_ layerDrawable: LayerRenderer.Drawable) {
 
         updateUniforms()
-        metal.eyeBuf?.updateEyeUniforms(layerDrawable, matrix_identity_float4x4)
+        //???? metal.eyeBuf?.updateEyeUniforms(layerDrawable, matrix_identity_float4x4)
     }
     
 #endif
@@ -115,15 +115,12 @@ public class PlatoNode: RenderNode {
         renderCmd.setVertexBuffer(metal.uniformBuf, offset: 0, index: 1)
         renderCmd.setFragmentBuffer(metal.uniformBuf, offset: 0, index: 1)
 
-        renderCmd.setFragmentTexture(cubeTex, index: 0)
-        renderCmd.setFragmentTexture(inTex, index: 1)
-        renderCmd.setFragmentTexture(altTex, index: 2)
+        //???? renderCmd.setFragmentTexture(cubeTex, index: 0) // 1080x1080
+        //???? renderCmd.setFragmentTexture(inTex  , index: 1) // 1920x1080
+        renderCmd.setFragmentTexture(altTex , index: 2) // 256x1 Palette
 
         metal.drawMesh(renderCmd)
-
-        if metal.model.nextCounter() == true {
-            metal.updateMesh()
-        }
+        metal.updateCounter(pipeline.device)
     }
 
     override public func updateTextures() {
@@ -143,6 +140,11 @@ public class PlatoNode: RenderNode {
                            withBytes   : palBytes,
                            bytesPerRow : bytesPerRow)
         }
+        if let cubeNode = inNode as? CubemapNode {
+            inTex = cubeNode.cubeTex
+        } else {
+            inTex = inNode?.outTex
+        }
         func makePaletteTex() -> MTLTexture? {
 
             let paletteTex = TextureCache
@@ -151,12 +153,7 @@ public class PlatoNode: RenderNode {
                                         device: pipeline.device)
             return paletteTex
         }
-        if let cubeNode = inNode as? CubemapNode {
-            inTex = cubeNode.cubeTex
-        } else {
-            inTex = inNode?.outTex
-        }
-        
+
     }
 }
 

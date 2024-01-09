@@ -8,18 +8,23 @@ public class PlatoMetal: MeshMetal {
     var model: PlatoModel!
 
     init(_ device: MTLDevice) {
+        super.init(DepthRenderState(
+            device,
+            vision: DepthRender(.none, .counterClockwise, .greater, true),
+            metal : DepthRender(.none, .counterClockwise, .less   , true)))
 
-        //  compare write  cull   winding
-        // .greater true  .front .counterClockwise -- not showing
-        // .less    true  .front .counterClockwise -- jumbled
-        // .less    false .front .counterClockwise -- jumbled
-        // .less    false .front .clockwise        -- jumbled
-        // .less    false .back  .clockwise        -- jumbled
-        // .less    true  .back  .counterClockwise -- jumbled
-        // .less    true  .none  .counterClockwise -- metal good!
+        //  cull   winding           compare write
+        // .front .counterClockwise .greater true  //-- not showing
+        // .front .counterClockwise .less    true  //-- jumbled
+        // .front .counterClockwise .less    false //-- jumbled
+        // .front .clockwise        .less    false //-- jumbled
+        // .back  .clockwise        .less    false //-- jumbled
+        // .back  .counterClockwise .less    true  //-- jumbled
+        // .none  .counterClockwise .less    true  //-- metal good!
 
-        super.init(device, cull: .none, winding: .counterClockwise)
-        self.stencil = MeshMetal.stencil(device, .less, true)
+        // .none  .counterClockwise .less    true) //-- jaggy
+        // .back  .counterClockwise .greater true) //-- plato big
+        // .none  .counterClockwise .greater true) //-- plato big, flat ok, cube no
 
         let nameFormats: [VertexNameFormat] = [
             ("pos0"    , .float4),
@@ -34,16 +39,21 @@ public class PlatoMetal: MeshMetal {
         let vertexStride = MemoryLayout<PlatoVertex>.stride
         model = PlatoModel(device, nameFormats, vertexStride)
         makeMetalVD(nameFormats,vertexStride)
-        updateMesh()
+        updateMesh(device)
     }
-    func updateMetal() {
+
+    func updateCounter(_ device: MTLDevice) {
+        if model.nextCounter() {
+            updateMesh(device)
+        }
+    }
+    func updateMetal(_ device: MTLDevice) {
 
         if model.updateConvex() {
-            updateMesh()
+            updateMesh(device)
         }
-    
     }
-    func updateMesh() {
-        mtkMesh = try! MTKMesh(mesh: model.mdlMesh, device: device) 
+    func updateMesh(_ device: MTLDevice) {
+        mtkMesh = try! MTKMesh(mesh: model.mdlMesh, device: device)
     }
 }
