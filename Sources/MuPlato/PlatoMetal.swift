@@ -8,10 +8,10 @@ public class PlatoMetal: MeshMetal {
     var model: PlatoModel!
 
     init(_ device: MTLDevice) {
-        super.init(DepthRenderState(
+        super.init(DepthRendering(
             device,
-            vision: DepthRender(.none, .counterClockwise, .greater, true),
-            metal : DepthRender(.none, .counterClockwise, .less   , true)))
+            immerse : RenderDepth(.none, .counterClockwise, .greater, true),
+            metal   : RenderDepth(.none, .counterClockwise, .less   , true)))
 
         //  cull   winding           compare write
         // .front .counterClockwise .greater true  //-- not showing

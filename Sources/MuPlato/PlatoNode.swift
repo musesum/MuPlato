@@ -7,7 +7,6 @@ import MuVision
 import CompositorServices
 #endif
 
-
 public class PlatoNode: RenderNode {
 
     var metal      : PlatoMetal!
@@ -115,8 +114,8 @@ public class PlatoNode: RenderNode {
         renderCmd.setVertexBuffer(metal.uniformBuf, offset: 0, index: 1)
         renderCmd.setFragmentBuffer(metal.uniformBuf, offset: 0, index: 1)
 
-        //???? renderCmd.setFragmentTexture(cubeTex, index: 0) // 1080x1080
-        //???? renderCmd.setFragmentTexture(inTex  , index: 1) // 1920x1080
+        renderCmd.setFragmentTexture(cubeTex, index: 0) // 1080x1080 //???? 
+        renderCmd.setFragmentTexture(inTex  , index: 1) // 1920x1080 //???? 
         renderCmd.setFragmentTexture(altTex , index: 2) // 256x1 Palette
 
         metal.drawMesh(renderCmd)
