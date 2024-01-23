@@ -3,7 +3,7 @@
 import simd
 
 extension SIMD4 {
-    var xyz: SIMD3<Scalar> {
+    public var xyz: SIMD3<Scalar> {
         SIMD3(x, y, z)
     }
 }
@@ -13,7 +13,7 @@ extension SIMD3<Float> {
         let h = ((x+max) * max * max) + ((y+max) * max) + (z + max)
         return h
     }
-    var script: String {
+    public var script: String {
         "(\(x.digits(0...2)),\(y.digits(0...2)),\(z.digits(0...2)))".pad(18)
     }
 }
