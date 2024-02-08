@@ -2,6 +2,7 @@
 
 import MetalKit
 import MuVision
+import MuExtensions
 
 public class PlatoModel: MeshModel<PlatoVertex> {
 
@@ -99,7 +100,7 @@ public class PlatoModel: MeshModel<PlatoVertex> {
         vertices = phaseTriangles.vertices
         indices = phaseTriangles.indices
         updatePlatoBuffers()
-        counter.logCountNow()
+        //counter.logCountNow()
     }
 
 }

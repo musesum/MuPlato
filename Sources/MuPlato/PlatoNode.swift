@@ -3,6 +3,8 @@
 import MetalKit
 import MuMetal
 import MuVision
+import MuExtensions
+
 #if os(visionOS)
 import CompositorServices
 #endif
@@ -54,7 +56,10 @@ public class PlatoNode: RenderNode {
 
         pd.colorAttachments[0].pixelFormat = MetalRenderPixelFormat
         pd.depthAttachmentPixelFormat = .depth32Float
-
+        #if targetEnvironment(simulator)
+        #elseif os(visionOS )
+        pd.maxVertexAmplificationCount = 2
+        #endif
         do {
             renderPipe = try pipeline.device.makeRenderPipelineState(descriptor: pd)
         }
@@ -63,8 +68,10 @@ public class PlatoNode: RenderNode {
         }
     }
     
-    func updatePlatoUniforms(_ worldCamera:  SIMD4<Float>) {
+    func updatePlatoUniforms() { //???? (_ worldCamera:  SIMD4<Float>) {
+
         let platoFlo = metal.model.platoFlo
+        
         uniforms = PlatoUniforms(
             range       : metal.model.counter.range01,
             convex      : platoFlo.convex,
@@ -72,50 +79,60 @@ public class PlatoNode: RenderNode {
             shadowWhite : platoFlo.shadowWhite,
             shadowDepth : platoFlo.shadowDepth,
             invert      : platoFlo.invert,
-            zoom        : platoFlo.zoom,
-            worldCamera : worldCamera)
+            zoom        : platoFlo.zoom)
 
         let uniformLen = MemoryLayout<PlatoUniforms>.stride
         memcpy(metal.uniformBuf.contents(), &uniforms, uniformLen)
         metal.updateMetal(pipeline.device)
     }
-    override public func updateUniforms() {
-        guard let orientation = Motion.shared.sceneOrientation else { return }
 
-        let perspective = pipeline.perspective()
-        let cameraPos = vector_float4([0, 0, -4 * platoFlo.zoom, 1])
-        let platoView = translation(cameraPos) * orientation
-        let worldCamera = orientation.inverse * -cameraPos
-        let projectModel = perspective * platoView
 
-        updatePlatoUniforms(worldCamera)
-        metal.eyeBuf?.updateEyeUniforms(projectModel)
-    }
 #if os(visionOS)
     /// Update projection and rotation
     override public func updateUniforms(_ layerDrawable: LayerRenderer.Drawable) {
-
-        updateUniforms()
-        //???? metal.eyeBuf?.updateEyeUniforms(layerDrawable, matrix_identity_float4x4)
+        updatePlatoUniforms()
+        let cameraPos = vector_float4([0, 0,  -4 * platoFlo.zoom, 1]) //?????
+        let label = (RenderDepth.state == .immer ? "👁️P⃝" : "👁️P")
+        metal.eyeBuf?.updateEyeUniforms(layerDrawable, cameraPos, label)
     }
-    
 #endif
+    override public func updateUniforms() {
+
+        updatePlatoUniforms()
+
+        guard let orientation = Motion.shared.sceneOrientation else { return }
+        let perspective = pipeline.perspective() // unchanged
+        let cameraPos = vector_float4([0, 0, -4 * platoFlo.zoom, 1]) //?????
+        let viewModel = translation(cameraPos) * orientation
+        let projection = perspective * viewModel
+
+        MuLog.Log("👁️p", interval: 4) {
+            print("👁️p")
+            print("\t👁️p orientation ", orientation.script)
+            print("\t👁️p perspective ", perspective.script)
+            print("\t👁️p projection  ", projection.script)
+            print("\t👁️p viewModel   ", viewModel.script)
+        }
+
+        metal.eyeBuf?.updateEyeUniforms(perspective, viewModel)
+    }
+
     override public func renderNode(_ renderCmd: MTLRenderCommandEncoder) {
 
-        guard let cubeNode = pipeline.cubemapNode else { return }
-        guard let cubeTex = cubeNode.cubeTex else { return }
-        guard let inTex = cubeNode.inTex else { return }
+        //??? guard let cubeNode = pipeline.cubemapNode else { return }
+        //??? guard let cubeTex = cubeNode.cubeTex else { return }
+        //??? guard let inTex = cubeNode.inTex else { return }
         guard let altTex else { return }
 
-        metal.eyeBuf?.setUniformBuf(renderCmd)
+        metal.eyeBuf?.setUniformBuf(renderCmd, "Plato")
 
         renderCmd.setTriangleFillMode(platoFlo.wire ? .lines : .fill)
         renderCmd.setRenderPipelineState(renderPipe)
         renderCmd.setVertexBuffer(metal.uniformBuf, offset: 0, index: 1)
         renderCmd.setFragmentBuffer(metal.uniformBuf, offset: 0, index: 1)
 
-        renderCmd.setFragmentTexture(cubeTex, index: 0) // 1080x1080 //???? 
-        renderCmd.setFragmentTexture(inTex  , index: 1) // 1920x1080 //???? 
+        //??? renderCmd.setFragmentTexture(cubeTex, index: 0) // 1080x1080 //????
+        //??? renderCmd.setFragmentTexture(inTex  , index: 1) // 1920x1080 //????
         renderCmd.setFragmentTexture(altTex , index: 2) // 256x1 Palette
 
         metal.drawMesh(renderCmd)

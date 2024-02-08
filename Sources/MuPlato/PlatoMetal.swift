@@ -2,6 +2,7 @@
 
 import MetalKit
 import MuVision
+import MuExtensions
 
 public class PlatoMetal: MeshMetal {
 
@@ -10,8 +11,8 @@ public class PlatoMetal: MeshMetal {
     init(_ device: MTLDevice) {
         super.init(DepthRendering(
             device,
-            immer : RenderDepth(.none, .counterClockwise, .greater, true),
-            metal : RenderDepth(.none, .counterClockwise, .less   , true)))
+            immer: RenderDepth(.none, .counterClockwise, .greater, true),
+            metal: RenderDepth(.none, .counterClockwise, .less   , true)))
 
         //  cull   winding           compare write
         // .front .counterClockwise .greater true  //-- not showing
