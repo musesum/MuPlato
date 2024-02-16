@@ -92,7 +92,7 @@ public class PlatoNode: RenderNode {
     override public func updateUniforms(_ layerDrawable: LayerRenderer.Drawable) {
         updatePlatoUniforms()
         let cameraPos = vector_float4([0, 0,  -4 * platoFlo.zoom, 1]) //?????
-        let label = (RenderDepth.state == .immer ? "👁️P⃝" : "👁️P")
+        let label = (RenderDepth.state == .immer ? "👁️P⃝lato" : "👁️Plato")
         metal.eyeBuf?.updateEyeUniforms(layerDrawable, cameraPos, label)
     }
 #endif
@@ -101,21 +101,19 @@ public class PlatoNode: RenderNode {
         updatePlatoUniforms()
 
         guard let orientation = Motion.shared.sceneOrientation else { return }
-        let perspective = pipeline.perspective() // unchanged
         let cameraPos = vector_float4([0, 0, -4 * platoFlo.zoom, 1]) //?????
         let viewModel = translation(cameraPos) * orientation
-        let projection = perspective * viewModel
+        let projection = pipeline.projection()
 
-        MuLog.Log("👁️p", interval: 4) {
-            print("👁️p")
-            print("\t👁️p orientation ", orientation.script)
-            print("\t👁️p perspective ", perspective.script)
+        MuLog.Log("👁️plato", interval: 4) {
             print("\t👁️p projection  ", projection.script)
-            print("\t👁️p viewModel   ", viewModel.script)
+            print("\t👁️p orientation ", orientation.script)
+            print("\t👁️p * cameraPos ", viewModel.script)
         }
 
-        metal.eyeBuf?.updateEyeUniforms(perspective, viewModel)
+        metal.eyeBuf?.updateEyeUniforms(projection, viewModel)
     }
+
 
     override public func renderNode(_ renderCmd: MTLRenderCommandEncoder) {
 
@@ -131,8 +129,8 @@ public class PlatoNode: RenderNode {
         renderCmd.setVertexBuffer(metal.uniformBuf, offset: 0, index: 1)
         renderCmd.setFragmentBuffer(metal.uniformBuf, offset: 0, index: 1)
 
-        //??? renderCmd.setFragmentTexture(cubeTex, index: 0) // 1080x1080 //????
-        //??? renderCmd.setFragmentTexture(inTex  , index: 1) // 1920x1080 //????
+        //??? renderCmd.setFragmentTexture(cubeTex, index: 0) // 1080x1080 //???
+        //??? renderCmd.setFragmentTexture(inTex  , index: 1) // 1920x1080 //???
         renderCmd.setFragmentTexture(altTex , index: 2) // 256x1 Palette
 
         metal.drawMesh(renderCmd)
