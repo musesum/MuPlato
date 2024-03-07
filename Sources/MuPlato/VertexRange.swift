@@ -7,7 +7,7 @@ struct VertexRange {
     let p0: Float3 // point at 0
     let p1: Float3 // point at 1
     let id: Int // unique ID
-    let harmonic: Harmonic // > 0 was created by subdividing triangle
+    var harmonic: Harmonic  = 0 // > 0 was created by subdividing triangle
 
     static var ID = Plato.Max.rawValue + 1
     static func nextId() -> Int {
@@ -19,35 +19,30 @@ struct VertexRange {
         self.p0 = p0
         self.p1 = p1
         self.id = id
-        self.harmonic = 0
     }
 
     init(_ p0: Float3, _ p1: Float3,_ p: Plato) {
         self.p0 = p0
         self.p1 = p1
         self.id = p.rawValue
-        self.harmonic = 0
     }
 
     init()  {
         self.p0 = Float3(0,0,0)
         self.p1 = Float3(0,0,0)
         self.id = 0
-        self.harmonic = 0
     }
 
     init(_ x: Float, _ y: Float, _ z: Float, _ p: Plato) {
         self.p0 = Float3(x,y,z)
         self.p1 = Float3(x,y,z)
         self.id = p.rawValue
-        self.harmonic = 0
     }
 
     init(_ a: Float3, _ p: Plato) {
         self.p0 = a
         self.p1 = a
         self.id = p.rawValue
-        self.harmonic = 0
     }
 
     /// new ranged point with new vertId
@@ -55,14 +50,12 @@ struct VertexRange {
         self.p0 = a
         self.p1 = b
         self.id = VertexRange.nextId()
-        self.harmonic = 0
     }
 
     init(_ a: Float3,_ b: VertexRange,_ p: Plato){
         self.p0 = a
         self.p1 = b.p1
         self.id = p.rawValue
-        self.harmonic = 0
     }
 
     /// the cardinal point have the same range where c.0 === c.1
@@ -70,7 +63,6 @@ struct VertexRange {
         self.p0 = a.p0
         self.p1 = b
         self.id = p.rawValue
-        self.harmonic = 0
     }
 
     /// the Plato point have the same range where c.0 === c.1
@@ -78,7 +70,6 @@ struct VertexRange {
         self.p0 = a.p0
         self.p1 = b.p1
         self.id = p.rawValue
-        self.harmonic = 0
     }
 
     /// the Plato point have the same range where c.0 === c.1
@@ -86,7 +77,6 @@ struct VertexRange {
         self.p0 = a.p0
         self.p1 = VertexRange.mid2(b2.0, b2.1).p1
         self.id = p.rawValue
-        self.harmonic = 0
     }
 
     /// the Plato point have the same range where c.0 === c.1
@@ -94,7 +84,6 @@ struct VertexRange {
         self.p0 = a.p0
         self.p1 = VertexRange.mid3(b3.0, b3.1, b3.2).p1
         self.id = p.rawValue
-        self.harmonic = 0
     }
     
     /// the Plato point have the same range where c.0 === c.1
@@ -102,7 +91,6 @@ struct VertexRange {
         self.p0 = VertexRange.mid2(a2.0, a2.1).p0
         self.p1 = b.p1
         self.id = p.rawValue
-        self.harmonic = 0
     }
 
     /// the Plato point have the same range where c.0 === c.1
@@ -110,7 +98,6 @@ struct VertexRange {
         self.p0 = VertexRange.mid3(a3.0, a3.1, a3.2).p0
         self.p1 = b.p1
         self.id = p.rawValue
-        self.harmonic = 0
     }
 
     /// the Plato point have the same range where c.0 === c.1
@@ -126,7 +113,6 @@ struct VertexRange {
         self.p0 = VertexRange.mid2(a2.0, a2.1).p0
         self.p1 = VertexRange.mid2(b2.0, b2.1).p1
         self.id = p.rawValue
-        self.harmonic = 0
     }
 
     init(mid: (VertexRange,VertexRange), _ p: Plato) {
@@ -134,7 +120,6 @@ struct VertexRange {
         self.p0 = m.p0
         self.p1 = m.p1
         self.id = p.rawValue
-        self.harmonic = 0
     }
     static func mid2(_ a: Float3,_ b: Float3) -> Float3 {
         return Float3((a.x + b.x) / 2.0,

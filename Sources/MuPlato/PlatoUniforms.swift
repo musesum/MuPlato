@@ -2,13 +2,13 @@
 
 import simd
 struct PlatoUniforms {
-    var range        : Float
-    var convex       : Float
-    var passthru     : Float
-    var shadowWhite  : Float
-    var shadowDepth  : Float
-    var invert       : Float
-    var zoom         : Float
+    var range   : Float
+    var convex  : Float
+    var reflect : Float
+    var alpha   : Float
+    var depth   : Float
+    var invert  : Float
+    var zoom    : Float
     //???? var worldCamera  : vector_float4
 }
 

@@ -53,8 +53,15 @@ public class PlatoNode: RenderNode {
         pd.vertexFunction   = library.makeFunction(name: vertexName)
         pd.fragmentFunction = library.makeFunction(name: fragmentName)
         pd.vertexDescriptor = metal.metalVD
-
         pd.colorAttachments[0].pixelFormat = MetalRenderPixelFormat
+        
+        // alpha blend
+        pd.colorAttachments[0].isBlendingEnabled = true
+        pd.colorAttachments[0].sourceRGBBlendFactor = .sourceAlpha
+        pd.colorAttachments[0].sourceAlphaBlendFactor = .sourceAlpha
+        pd.colorAttachments[0].destinationRGBBlendFactor = .oneMinusSourceAlpha
+        pd.colorAttachments[0].destinationAlphaBlendFactor = .oneMinusSourceAlpha
+
         pd.depthAttachmentPixelFormat = .depth32Float
         #if targetEnvironment(simulator)
         #elseif os(visionOS )
@@ -68,18 +75,18 @@ public class PlatoNode: RenderNode {
         }
     }
     
-    func updatePlatoUniforms() { //???? (_ worldCamera:  SIMD4<Float>) {
+    func updatePlatoUniforms() {
 
         let platoFlo = metal.model.platoFlo
         
         uniforms = PlatoUniforms(
-            range       : metal.model.counter.range01,
-            convex      : platoFlo.convex,
-            passthru    : platoFlo.passthru,
-            shadowWhite : platoFlo.shadowWhite,
-            shadowDepth : platoFlo.shadowDepth,
-            invert      : platoFlo.invert,
-            zoom        : platoFlo.zoom)
+            range   : metal.model.counter.range01,
+            convex  : platoFlo.convex,
+            reflect : platoFlo.reflect,
+            alpha   : platoFlo.alpha,
+            depth   : platoFlo.depth,
+            invert  : platoFlo.invert,
+            zoom    : platoFlo.zoom)
 
         let uniformLen = MemoryLayout<PlatoUniforms>.stride
         memcpy(metal.uniformBuf.contents(), &uniforms, uniformLen)
@@ -91,7 +98,7 @@ public class PlatoNode: RenderNode {
     /// Update projection and rotation
     override public func updateUniforms(_ layerDrawable: LayerRenderer.Drawable) {
         updatePlatoUniforms()
-        let cameraPos = vector_float4([0, 0,  -4 * platoFlo.zoom, 1]) //?????
+        let cameraPos = vector_float4([0, 1, -4 * platoFlo.zoom, 1]) 
         let label = (RenderDepth.state == .immer ? "👁️P⃝lato" : "👁️Plato")
         metal.eyeBuf?.updateEyeUniforms(layerDrawable, cameraPos, label)
     }
@@ -101,11 +108,11 @@ public class PlatoNode: RenderNode {
         updatePlatoUniforms()
 
         guard let orientation = Motion.shared.sceneOrientation else { return }
-        let cameraPos = vector_float4([0, 0, -4 * platoFlo.zoom, 1]) //?????
+        let cameraPos = vector_float4([0, 0, -4 * platoFlo.zoom, 1]) 
         let viewModel = translation(cameraPos) * orientation
         let projection = pipeline.projection()
 
-        MuLog.Log("👁️plato", interval: 4) {
+        MuLog.NoLog("👁️plato", interval: 4) {
             print("\t👁️p projection  ", projection.script)
             print("\t👁️p orientation ", orientation.script)
             print("\t👁️p * cameraPos ", viewModel.script)

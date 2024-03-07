@@ -11,7 +11,11 @@ public class PlatoMetal: MeshMetal {
     init(_ device: MTLDevice) {
         super.init(DepthRendering(
             device,
-            immer: RenderDepth(.none, .counterClockwise, .greater, true),
+            //immer: RenderDepth(.none, .counterClockwise, .greaterEqual, false), // front hidden
+            immer: RenderDepth(.none, .counterClockwise, .greaterEqual, true), // back hidden
+            //immer: RenderDepth(.none, .counterClockwise, .lessEqual, false), // hidden
+            //immer: RenderDepth(.none, .counterClockwise, .greater, true), // back hidden
+
             metal: RenderDepth(.none, .counterClockwise, .less   , true)))
 
         //  cull   winding           compare write
