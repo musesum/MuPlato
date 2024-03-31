@@ -40,6 +40,7 @@ extension PhaseTriangles {
             let n0 = normalize(vertices[index-3].pos0.xyz,
                                vertices[index-2].pos0.xyz,
                                vertices[index-1].pos0.xyz)
+            
             vertices[index-3].norm0 = n0
             vertices[index-2].norm0 = n0
             vertices[index-1].norm0 = n0
