@@ -5,7 +5,7 @@ import Metal
 import Vision
 import UIKit
 import simd
-import MuExtensions
+import MuFlo
 
 extension PhaseTriangles {
 

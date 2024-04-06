@@ -2,7 +2,7 @@
 
 import MetalKit
 import MuVision
-import MuExtensions
+import MuFlo
 
 public class PlatoMetal: MeshMetal {
 

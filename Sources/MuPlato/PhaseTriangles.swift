@@ -3,7 +3,7 @@
 import Foundation
 import Metal
 import MetalKit
-import MuExtensions
+import MuFlo
 
 class PhaseTriangles {
 

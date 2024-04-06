@@ -3,7 +3,7 @@
 import MetalKit
 import MuMetal
 import MuVision
-import MuExtensions
+import MuFlo
 
 #if os(visionOS)
 import CompositorServices
