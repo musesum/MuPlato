@@ -4,7 +4,6 @@ import UIKit
 import Metal
 import MuMetal
 import MuFlo
-import MuColor
 import simd
 
 open class PlatoPipeline: Pipeline {
