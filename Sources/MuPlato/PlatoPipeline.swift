@@ -37,7 +37,7 @@ open class PlatoPipeline: Pipeline {
         metalLayer.framebufferOnly = true
 
         if cameraFlo.stream {
-            cameraNode = CameraNode(root˚, self, "camera", "compute.camera")
+            cameraNode = CameraNode(root˚, self, "camera", "kernel.camera")
             //?? nodes.append(cameraNode)
         }
         if cubeFlo.canvas {

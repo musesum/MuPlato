@@ -9,7 +9,6 @@ struct PlatoUniforms {
     var depth   : Float
     var invert  : Float
     var zoom    : Float
-    //???? var worldCamera  : vector_float4
 }
 
 enum PlatoStyle: Int {

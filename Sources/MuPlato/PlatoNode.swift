@@ -82,10 +82,10 @@ public class PlatoNode: RenderNode {
         uniforms = PlatoUniforms(
             range   : metal.model.counter.range01,
             convex  : platoFlo.convex,
-            reflect : platoFlo.reflect,
+            reflect : Float(platoFlo.material.x),
             alpha   : platoFlo.alpha,
             depth   : platoFlo.depth,
-            invert  : platoFlo.invert,
+            invert  : Float(platoFlo.material.y),
             zoom    : platoFlo.zoom)
 
         let uniformLen = MemoryLayout<PlatoUniforms>.stride
@@ -117,16 +117,14 @@ public class PlatoNode: RenderNode {
             print("\t👁️p orientation ", orientation.script)
             print("\t👁️p * cameraPos ", viewModel.script)
         }
-
         metal.eyeBuf?.updateEyeUniforms(projection, viewModel)
     }
 
-
     override public func renderNode(_ renderCmd: MTLRenderCommandEncoder) {
 
-        //??? guard let cubeNode = pipeline.cubemapNode else { return }
-        //??? guard let cubeTex = cubeNode.cubeTex else { return }
-        //??? guard let inTex = cubeNode.inTex else { return }
+        //?? guard let cubeNode = pipeline.cubemapNode else { return }
+        //?? guard let cubeTex = cubeNode.cubeTex else { return }
+        //?? guard let inTex = cubeNode.inTex else { return }
         guard let altTex else { return }
 
         metal.eyeBuf?.setUniformBuf(renderCmd, "Plato")
@@ -136,8 +134,8 @@ public class PlatoNode: RenderNode {
         renderCmd.setVertexBuffer(metal.uniformBuf, offset: 0, index: 1)
         renderCmd.setFragmentBuffer(metal.uniformBuf, offset: 0, index: 1)
 
-        //??? renderCmd.setFragmentTexture(cubeTex, index: 0) // 1080x1080 //???
-        //??? renderCmd.setFragmentTexture(inTex  , index: 1) // 1920x1080 //???
+        //?? renderCmd.setFragmentTexture(cubeTex, index: 0) // 1080x1080 //???
+        //?? renderCmd.setFragmentTexture(inTex  , index: 1) // 1920x1080 //???
         renderCmd.setFragmentTexture(altTex , index: 2) // 256x1 Palette
 
         metal.drawMesh(renderCmd)
