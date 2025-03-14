@@ -8,7 +8,7 @@ let package = Package(
     products: [.library(name: "MuPlato", targets: ["MuPlato"])],
     dependencies: [
         .package(url: "https://github.com/musesum/MuFlo.git", .branch("dev")),
-        .package(url: "https://github.com/musesum/MuVision.git", branch: "dev"),
+        .package(url: "https://github.com/musesum/MuVision.git", branch: "main"),
     ],
     targets: [
         .target(
