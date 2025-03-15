@@ -16,18 +16,16 @@ open class PlatoFlos {
     private var run˚      : Flo? ; var run      = true
     private var wire˚     : Flo? ; var wire     = false
 
-    
     init() {
-
         let plato = Flo.root˚.bind("model.plato")
-        zoom˚     = plato.bind("zoom"    ) { f,_ in self.zoom     = f.float   }
-        material˚ = plato.bind("material") { f,_ in self.material = f.xyz }
-        harmonic˚ = plato.bind("harmonic") { f,_ in self.harmonic = f.int     }
-        phase˚    = plato.bind("phase"   ) { f,_ in self.phase    = f.int     }
-        convex˚   = plato.bind("convex"  ) { f,_ in self.convex   = f.float   }
-        run˚      = plato.bind("run"     ) { f,_ in self.run      = f.bool    }
-        wire˚     = plato.bind("wire"    ) { f,_ in self.wire     = f.bool    }
-        counter˚  = plato.bind("_counter") { f,_ in self.counter  = f.int     }
+        zoom˚     = plato.bind("zoom"    ) { f,_ in self.zoom     = f.float }
+        material˚ = plato.bind("material") { f,_ in self.material = f.xyz   }
+        harmonic˚ = plato.bind("harmonic") { f,_ in self.harmonic = f.int   }
+        phase˚    = plato.bind("phase"   ) { f,_ in self.phase    = f.int   }
+        convex˚   = plato.bind("convex"  ) { f,_ in self.convex   = f.float }
+        run˚      = plato.bind("run"     ) { f,_ in self.run      = f.bool  }
+        wire˚     = plato.bind("wire"    ) { f,_ in self.wire     = f.bool  }
+        counter˚  = plato.bind("_counter") { f,_ in self.counter  = f.int   }
     }
 }
 
