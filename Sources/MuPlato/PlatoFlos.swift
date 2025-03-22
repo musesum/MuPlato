@@ -17,7 +17,7 @@ open class PlatoFlos {
     private var wire˚     : Flo? ; var wire     = false
 
     init() {
-        let plato = Flo.root˚.bind("model.plato")
+        let plato = Flo.root˚.bind("plato")
         zoom˚     = plato.bind("zoom"    ) { f,_ in self.zoom     = f.float }
         material˚ = plato.bind("material") { f,_ in self.material = f.xyz   }
         harmonic˚ = plato.bind("harmonic") { f,_ in self.harmonic = f.int   }
