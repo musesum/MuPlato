@@ -8,7 +8,7 @@ class PlatoCounter {
     enum Direction { case up, down }
     var counterDirection = Direction.up
     var harmonicDirection = Direction.up
-    var platoFlos = PlatoFlos.shared
+    var platoFlo: PlatoFlos
 
     //var platoFlos.counter = 0    // infinite counter, always rising
     var harmonic = 0   // current triangle subdivision
@@ -27,12 +27,16 @@ class PlatoCounter {
 
     var range01 : Float = 0
 
-    init(steps: Int, phase: Int, harmonic: Int) {
+    init(_ platoFlo: PlatoFlos,
+         steps: Int,
+         phase: Int,
+         harmonic: Int) {
+        self.platoFlo = platoFlo
         self.phaseSteps = steps
         self.cycleSteps = phaseSteps * phases
         self.harmonic = harmonic
         self.phase = phase
-        platoFlos.counter = phase * phaseSteps
+        platoFlo.counter = phase * phaseSteps
         //test()
     }
 
@@ -40,20 +44,20 @@ class PlatoCounter {
                           _ harmonicNow: Int) {
         phase  = max(0, min(phaseNow, phases))
         harmonic = max(0, min(harmonicNow, harmonics))
-        platoFlos.counter = (phase * phaseSteps)
+        platoFlo.counter = (phase * phaseSteps)
     }
     func next() {
 
-        platoFlos.counter += counterDirection == .up ? 1 : -1
-        if platoFlos.counter >= cycleSteps {
+        platoFlo.counter += counterDirection == .up ? 1 : -1
+        if platoFlo.counter >= cycleSteps {
 
             counterDirection = .down
-            platoFlos.counter = cycleSteps - 1
+            platoFlo.counter = cycleSteps - 1
 
-        } else if platoFlos.counter < 0 {
+        } else if platoFlo.counter < 0 {
 
             counterDirection = .up
-            platoFlos.counter = 0
+            platoFlo.counter = 0
 
             // new harmonic
 
@@ -69,12 +73,12 @@ class PlatoCounter {
                 newHarmonic = true
             }
         }
-        if phase != platoFlos.counter / phaseSteps {
-            phase = platoFlos.counter / phaseSteps
+        if phase != platoFlo.counter / phaseSteps {
+            phase = platoFlo.counter / phaseSteps
             newPhase = true
         }
 
-        range01 = Float(platoFlos.counter % phaseSteps) / Float(phaseSteps)
+        range01 = Float(platoFlo.counter % phaseSteps) / Float(phaseSteps)
         logCounter()
     }
     func logCountNow() {
@@ -82,7 +86,7 @@ class PlatoCounter {
         let harmonicDir = harmonicDirection == .up ? ">" : "<"
         let harmonicStr = "harmonic: \(harmonic) \(harmonicDir) "
         let counterDir = counterDirection == .up ? ">" : "<"
-        let counterStr = "counter: \(platoFlos.counter) \(counterDir)"
+        let counterStr = "counter: \(platoFlo.counter) \(counterDir)"
         print(phaseStr + harmonicStr + counterStr)
     }
 
@@ -90,8 +94,8 @@ class PlatoCounter {
 //        print("\(counter):  harmonic: \(harmonic)  phase: \(phase)  range01: \(range01.digits(3...3))")
     }
     func test() {
-        for i in stride(from:    0, to:   210, by:  1) { platoFlos.counter = i; next() } ; print("_1_")
-        for i in stride(from: 1290, to:  1410, by:  1) { platoFlos.counter = i; next() } ; print("_2_")
-        for i in stride(from: 2000, to: 40000, by: 99) { platoFlos.counter = i; next() } ; print("_3_")
+        for i in stride(from:    0, to:   210, by:  1) { platoFlo.counter = i; next() } ; print("_1_")
+        for i in stride(from: 1290, to:  1410, by:  1) { platoFlo.counter = i; next() } ; print("_2_")
+        for i in stride(from: 2000, to: 40000, by: 99) { platoFlo.counter = i; next() } ; print("_3_")
     }
 }

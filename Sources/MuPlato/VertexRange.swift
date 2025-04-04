@@ -9,12 +9,15 @@ struct VertexRange {
     let id: Int // unique ID
     var harmonic: Harmonic  = 0 // > 0 was created by subdividing triangle
 
-    static var ID = Plato.Max.rawValue + 1
-    static func nextId() -> Int {
-        ID += 1
-        return ID
+    nonisolated(unsafe) static var VertexId = 0  // unique identifier for each node
+    public static func nextId() -> Int {
+        let lock = NSLock()
+        lock.lock()
+        VertexId += 1
+        lock.unlock()
+        return VertexId
     }
-
+    
     init(_ p0: Float3, _ p1: Float3,_ id: Int = nextId()) {
         self.p0 = p0
         self.p1 = p1

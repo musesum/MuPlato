@@ -8,19 +8,20 @@ public class PlatoModel: MeshModel<PlatoVertex> {
 
     var phaseTriangles: PhaseTriangles!
     var platoPhases = [PhaseTriangles]()
-    let platoFlos = PlatoFlos.shared
-    let cameraFlo = CameraFlos.shared
+    let platoFlo: PlatoFlos
     var counter: PlatoCounter!
     var phaseNow = 0
     var harmonicNow = 0
     var convex = Float(0.95)
 
-    override public init(_ nameFormats: [VertexNameFormat],
-                         _ vertexStride: Int) {
+    init(_ platoFlo: PlatoFlos,
+         _ nameFormats: [VertexNameFormat],
+         _ vertexStride: Int) {
 
+        self.platoFlo = platoFlo
         super.init(nameFormats, vertexStride)
-        let steps = cameraFlo.stream ? 120 : 200
-        self.counter = PlatoCounter(steps: steps, phase: 1, harmonic: 1)
+        let steps = 200 //CameraFlos.shared.stream ? 120 : 200
+        self.counter = PlatoCounter(platoFlo, steps: steps, phase: 1, harmonic: 1)
         buildHarmonic()
         buildPhase()
     }
@@ -55,8 +56,8 @@ public class PlatoModel: MeshModel<PlatoVertex> {
         }
     }
     func updateConvex() -> Bool {
-        if convex != platoFlos.convex {
-            convex = platoFlos.convex
+        if convex != platoFlo.convex {
+            convex = platoFlo.convex
             buildPhase()
             return true
         }
@@ -66,17 +67,17 @@ public class PlatoModel: MeshModel<PlatoVertex> {
 
         var changed = false
 
-        if phaseNow != platoFlos.phase ||
-            harmonicNow != platoFlos.harmonic
+        if phaseNow != platoFlo.phase ||
+            harmonicNow != platoFlo.harmonic
         {
-            phaseNow = platoFlos.phase
-            harmonicNow = platoFlos.harmonic
+            phaseNow = platoFlo.phase
+            harmonicNow = platoFlo.harmonic
             counter.setPhaseHarmonic(phaseNow,harmonicNow)
             buildHarmonic()
             buildPhase()
             changed = true
 
-        } else if platoFlos.run {
+        } else if platoFlo.run {
 
             counter.next()
 
@@ -94,7 +95,7 @@ public class PlatoModel: MeshModel<PlatoVertex> {
     func buildPhase() {
         counter.newPhase = false
         phaseTriangles = platoPhases[counter.phase]
-        phaseTriangles.updateTriangles(counter.phase)
+        phaseTriangles.updateTriangles(platoFlo.convex, counter.phase)
 
         vertices = phaseTriangles.vertices
         indices = phaseTriangles.indices

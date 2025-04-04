@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 
 import PackageDescription
 
@@ -7,8 +7,8 @@ let package = Package(
     platforms: [.iOS(.v17)],
     products: [.library(name: "MuPlato", targets: ["MuPlato"])],
     dependencies: [
-        .package(url: "https://github.com/musesum/MuFlo.git", .branch("main")),
-        .package(url: "https://github.com/musesum/MuVision.git", branch: "main"),
+        .package(url: "https://github.com/musesum/MuFlo.git",  branch: "sync" ),
+        .package(url: "https://github.com/musesum/MuVision.git", branch: "sync"),
     ],
     targets: [
         .target(

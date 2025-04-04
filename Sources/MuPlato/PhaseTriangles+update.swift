@@ -9,7 +9,7 @@ import MuFlo
 
 extension PhaseTriangles {
 
-    func updateTriangles(_ phase: Int) {
+    func updateTriangles(_ convex: Float, _ phase: Int) {
 
         vertices = [PlatoVertex](repeating: PlatoVertex(), count: triCount)
         indices =  [UInt32]     (repeating:             0, count: triCount)
@@ -22,7 +22,7 @@ extension PhaseTriangles {
             for vert in [tri.v0, tri.v1, tri.v2] {
 
                 let harmonic = Float(vert.harmonic)
-                let convex = pow(PlatoFlos.shared.convex, harmonic)
+                let convex = pow(convex, harmonic)
                 vertices[index].pos0 = pnt4f(vert.p0, 1) * convex
                 vertices[index].pos1 = pnt4f(vert.p1, 1) * convex
                 vertices[index].vertId = Float(vert.id)   

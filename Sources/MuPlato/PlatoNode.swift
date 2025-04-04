@@ -12,7 +12,7 @@ public class PlatoNode: RenderNode {
 
     var platoMesh    : PlatoMesh!
     var platoShading : PlatoShading!
-    let platoFlo     = PlatoFlos.shared
+    let platoFlo     : PlatoFlos
     var platoStyle   = PlatoStyle.reflect
 
     private var inTex˚   : Flo?
@@ -24,8 +24,10 @@ public class PlatoNode: RenderNode {
     public override init(_ pipeline : Pipeline,
                          _ childFlo : Flo) {
 
+        platoFlo = PlatoFlos(pipeline.root˚)
+        platoMesh = PlatoMesh(platoFlo)
         super.init(pipeline, childFlo)
-        platoMesh = PlatoMesh()
+
         inTex˚   = pipeFlo.superBindPath("in")
         palTex˚  = pipeFlo.superBindPath("pal")
         cubeTex˚ = pipeFlo.superBindPath("cube")
@@ -60,7 +62,7 @@ public class PlatoNode: RenderNode {
     func updatePlatoUniforms() {
 
         platoMesh.updateMetal()
-        let platoFlos = platoMesh.model.platoFlos
+        let platoFlos = platoMesh.model.platoFlo
 
         platoShading = PlatoShading(
             convex  : platoFlos.convex,            // platoFlos.convex,
@@ -79,7 +81,8 @@ public class PlatoNode: RenderNode {
 
         updatePlatoUniforms()
 
-        guard let orientation = Motion.shared.sceneOrientation else { return }
+        //....guard let orientation = Motion.shared.sceneOrientation else { return }
+        let orientation = matrix_identity_float4x4 //....
         let cameraPos = vector_float4([0, 0, 4 * (platoFlo.zoom - 1), 1])
         let viewModel = translate4x4(cameraPos) * orientation
         let projection = project4x4(pipeline.layer.drawableSize)
