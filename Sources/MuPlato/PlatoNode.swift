@@ -115,13 +115,14 @@ public class PlatoNode: RenderNode {
     
 #if os(visionOS)
     /// Update projection and rotation
-    override public func updateUniforms(_ drawable: LayerRenderer.Drawable) {
+    override public func updateUniforms(_ drawable: LayerRenderer.Drawable,
+                                        _ deviceAnchor: DeviceAnchor?) {
 
         updatePlatoUniforms()
         
         let cameraPos = vector_float4([0, 1, 4 * (platoFlo.zoom - 1), 1])
         let label = (RenderDepth.state == .immersive ? "👁️P⃝lato" : "👁️Plato")
-        platoMesh.eyeBuf?.updateEyeUniforms(drawable, cameraPos, label)
+        platoMesh.eyeBuf?.updateEyeUniforms(drawable, deviceAnchor, cameraPos, label)
     }
 #endif
 
