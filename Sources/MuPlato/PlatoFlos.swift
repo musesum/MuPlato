@@ -11,7 +11,7 @@ open class PlatoFlos {
     private var phase˚    : Flo? ; var phase    = Int(0)
     private var harmonic˚ : Flo? ; var harmonic = Int(1)
     private var convex˚   : Flo? ; var convex   = Float(0.95)
-    private var material˚ : Flo? ; var material = SIMD3<Float>(x: 0.0, y: 0.0, z: 0.75)
+    private var material˚ : Flo? ; var material = SIMD3<Float>(x: 0.0, y: 0.0, z: 1.0)
     private var zoom˚     : Flo? ; var zoom     = Float(0)
     private var run˚      : Flo? ; var run      = true
     private var wire˚     : Flo? ; var wire     = false
