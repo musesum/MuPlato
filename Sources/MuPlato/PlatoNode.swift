@@ -12,7 +12,7 @@ public class PlatoNode: RenderNode {
 
     var platoMesh    : PlatoMesh!
     var platoShading : PlatoShading!
-    let platoFlo     = PlatoFlos.shared
+    let platoFlo     = PlatoFlo.shared
     var platoStyle   = PlatoStyle.reflect
 
     private var inTex˚   : Flo?
@@ -63,12 +63,12 @@ public class PlatoNode: RenderNode {
         let platoFlos = platoMesh.model.platoFlos
 
         platoShading = PlatoShading(
-            convex  : platoFlos.convex,            // platoFlos.convex,
-            reflect : Float(platoFlos.material.y), // Float(platoFlos.material.x),
-            alpha   : Float(platoFlos.material.z), // platoFlos.alpha,
-            depth   : Float(platoFlos.material.x), // platoFlos.depth,
-            invert  : Float(platoFlos.material.z), // Float(platoFlos.material.y),
-            zoom    : platoFlos.zoom            )  // platoFlos.zoom)
+            convex  : platoFlos.convex,
+            reflect : Float(platoFlos.material.y),
+            alpha   : Float(platoFlos.alpha),     
+            depth   : Float(platoFlos.material.x),
+            invert  : Float(platoFlos.material.z),
+            zoom    : platoFlos.zoom            )
 
         let size = MemoryLayout<PlatoShading>.stride
         memcpy(platoMesh.mtlBuffer.contents(), &platoShading, size)

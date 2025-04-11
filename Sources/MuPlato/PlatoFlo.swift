@@ -4,9 +4,9 @@ import AVFoundation
 import CoreMedia
 import MuFlo
 
-open class PlatoFlos {
+open class PlatoFlo {
 
-    static public let shared = PlatoFlos()
+    static public let shared = PlatoFlo()
     private var counter˚  : Flo? ; var counter  = Int(0)
     private var phase˚    : Flo? ; var phase    = Int(0)
     private var harmonic˚ : Flo? ; var harmonic = Int(1)
@@ -15,6 +15,7 @@ open class PlatoFlos {
     private var zoom˚     : Flo? ; var zoom     = Float(0)
     private var run˚      : Flo? ; var run      = true
     private var wire˚     : Flo? ; var wire     = false
+    private var alpha˚    : Flo? ; var alpha    = Float(1)
 
     init() {
         let plato = Flo.root˚.bind("plato")
@@ -25,6 +26,7 @@ open class PlatoFlos {
         convex˚   = plato.bind("convex"  ) { f,_ in self.convex   = f.float }
         run˚      = plato.bind("run"     ) { f,_ in self.run      = f.bool  }
         wire˚     = plato.bind("wire"    ) { f,_ in self.wire     = f.bool  }
+        alpha˚    = plato.bind("alpha"   ) { f,_ in self.alpha    = f.float }
         counter˚  = plato.bind("_counter") { f,_ in self.counter  = f.int   }
     }
 }

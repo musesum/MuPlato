@@ -8,7 +8,7 @@ public class PlatoModel: MeshModel<PlatoVertex> {
 
     var phaseTriangles: PhaseTriangles!
     var platoPhases = [PhaseTriangles]()
-    let platoFlos = PlatoFlos.shared
+    let platoFlos = PlatoFlo.shared
     let cameraFlo = CameraFlos.shared
     var counter: PlatoCounter!
     var phaseNow = 0

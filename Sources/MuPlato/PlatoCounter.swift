@@ -8,7 +8,7 @@ class PlatoCounter {
     enum Direction { case up, down }
     var counterDirection = Direction.up
     var harmonicDirection = Direction.up
-    var platoFlos = PlatoFlos.shared
+    var platoFlos = PlatoFlo.shared
 
     //var platoFlos.counter = 0    // infinite counter, always rising
     var harmonic = 0   // current triangle subdivision
