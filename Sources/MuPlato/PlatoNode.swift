@@ -12,7 +12,7 @@ public class PlatoNode: RenderNode {
 
     var platoMesh    : PlatoMesh!
     var platoShading : PlatoShading!
-    let platoFlo     = PlatoFlo.shared
+    let platoFlo     : PlatoFlo
     var platoStyle   = PlatoStyle.reflect
 
     private var inTex˚   : Flo?
@@ -24,8 +24,9 @@ public class PlatoNode: RenderNode {
     public override init(_ pipeline : Pipeline,
                          _ childFlo : Flo) {
 
+        platoFlo = PlatoFlo(pipeline.root˚)
+        platoMesh = PlatoMesh(platoFlo)
         super.init(pipeline, childFlo)
-        platoMesh = PlatoMesh()
         inTex˚   = pipeFlo.superBindPath("in")
         palTex˚  = pipeFlo.superBindPath("pal")
         cubeTex˚ = pipeFlo.superBindPath("cube")
@@ -60,15 +61,15 @@ public class PlatoNode: RenderNode {
     func updatePlatoUniforms() {
 
         platoMesh.updateMetal()
-        let platoFlos = platoMesh.model.platoFlos
+        let platoFlo = platoMesh.model.platoFlo
 
         platoShading = PlatoShading(
-            convex  : platoFlos.convex,
-            reflect : Float(platoFlos.material.y),
-            alpha   : Float(platoFlos.alpha),     
-            depth   : Float(platoFlos.material.x),
-            invert  : Float(platoFlos.material.z),
-            zoom    : platoFlos.zoom            )
+            convex  : platoFlo.convex,
+            reflect : Float(platoFlo.material.y),
+            alpha   : Float(platoFlo.alpha),     
+            depth   : Float(platoFlo.material.x),
+            invert  : Float(platoFlo.material.z),
+            zoom    : platoFlo.zoom            )
 
         let size = MemoryLayout<PlatoShading>.stride
         memcpy(platoMesh.mtlBuffer.contents(), &platoShading, size)

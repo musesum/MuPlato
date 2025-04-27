@@ -8,7 +8,7 @@ public class PlatoMesh: MeshMetal {
 
     var model: PlatoModel!
 
-    init() {
+    init(_ platoFlo: PlatoFlo) {
         super.init(DepthRendering(
             immer: RenderDepth(.none, .counterClockwise, .greaterEqual, true), // back hidden
             metal: RenderDepth(.none, .counterClockwise, .less,         true)))
@@ -24,7 +24,7 @@ public class PlatoMesh: MeshMetal {
             ("phase",    .float),
         ]
         let vertexStride = MemoryLayout<PlatoVertex>.stride
-        model = PlatoModel(nameFormats, vertexStride)
+        model = PlatoModel(platoFlo, nameFormats, vertexStride)
         makeMetalVD(nameFormats,vertexStride)
         updateMesh()
     }

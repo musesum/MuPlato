@@ -6,7 +6,6 @@ import MuFlo
 
 open class PlatoFlo {
 
-    static public let shared = PlatoFlo()
     private var counter˚  : Flo? ; var counter  = Int(0)
     private var phase˚    : Flo? ; var phase    = Int(0)
     private var harmonic˚ : Flo? ; var harmonic = Int(1)
@@ -17,8 +16,8 @@ open class PlatoFlo {
     private var wire˚     : Flo? ; var wire     = false
     private var alpha˚    : Flo? ; var alpha    = Float(1)
 
-    init() {
-        let plato = Flo.root˚.bind("plato")
+    init(_ root˚: Flo) {
+        let plato = root˚.bind("plato")
         zoom˚     = plato.bind("zoom"    ) { f,_ in self.zoom     = f.float }
         material˚ = plato.bind("material") { f,_ in self.material = f.xyz   }
         harmonic˚ = plato.bind("harmonic") { f,_ in self.harmonic = f.int   }
