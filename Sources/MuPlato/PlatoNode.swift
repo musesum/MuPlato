@@ -22,16 +22,16 @@ public class PlatoNode: RenderNode {
     private var shading˚ : Flo?
 
     public override init(_ pipeline : Pipeline,
-                         _ childFlo : Flo) {
+                         _ pipeNode˚ : Flo) {
 
         platoFlo = PlatoFlo(pipeline.root˚)
         platoMesh = PlatoMesh(platoFlo)
-        super.init(pipeline, childFlo)
-        inTex˚   = pipeFlo.superBindPath("in")
-        palTex˚  = pipeFlo.superBindPath("pal")
-        cubeTex˚ = pipeFlo.superBindPath("cube")
-        range01˚ = pipeFlo.superBindPath("range01")
-        shading˚ = pipeFlo.superBindPath("shading")
+        super.init(pipeline, pipeNode˚)
+        inTex˚   = pipeNode˚.superBindPath("in")
+        palTex˚  = pipeNode˚.superBindPath("pal")
+        cubeTex˚ = pipeNode˚.superBindPath("cube")
+        range01˚ = pipeNode˚.superBindPath("range01")
+        shading˚ = pipeNode˚.superBindPath("shading")
 
         makeRenderPipeline()
         makeResources()
