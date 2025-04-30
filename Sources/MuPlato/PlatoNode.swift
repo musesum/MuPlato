@@ -25,7 +25,7 @@ public class PlatoNode: RenderNode {
                          _ pipeNode˚ : Flo) {
 
         platoFlo = PlatoFlo(pipeline.root˚)
-        platoMesh = PlatoMesh(platoFlo)
+        platoMesh = PlatoMesh(platoFlo, pipeline.renderState)
         super.init(pipeline, pipeNode˚)
         inTex˚   = pipeNode˚.superBindPath("in")
         palTex˚  = pipeNode˚.superBindPath("pal")
@@ -94,7 +94,8 @@ public class PlatoNode: RenderNode {
         }
     }
 
-    override public func renderNode(_ renderEnc: MTLRenderCommandEncoder) {
+    override public func renderNode(_ renderEnc: MTLRenderCommandEncoder,
+                                    _ renderState: RenderState) {
         guard let renderPipelineState else { return }
 
         platoMesh.eyeBuf?.setUniformBuf(renderEnc)
@@ -110,7 +111,7 @@ public class PlatoNode: RenderNode {
         renderEnc.setTriangleFillMode(platoFlo.wire ? .lines : .fill)
         renderEnc.setRenderPipelineState(renderPipelineState)
 
-        platoMesh.drawMesh(renderEnc)
+        platoMesh.drawMesh(renderEnc, renderState)
         platoMesh.updateCounter()
     }
     
@@ -121,9 +122,8 @@ public class PlatoNode: RenderNode {
 
         updatePlatoUniforms()
         
-        let cameraPos = vector_float4([0, 1, 4 * (platoFlo.zoom - 1), 1])
-        let label = (RenderDepth.state == .immersive ? "👁️P⃝lato" : "👁️Plato")
-        platoMesh.eyeBuf?.updateEyeUniforms(drawable, deviceAnchor, cameraPos, label)
+        let cameraPos = vector_float4([0, 1, 4 * (platoFlo.zoom - 1), 1]) //???
+        platoMesh.eyeBuf?.updateEyeUniforms(drawable, deviceAnchor, cameraPos, "👁️Plato")
     }
 #endif
 

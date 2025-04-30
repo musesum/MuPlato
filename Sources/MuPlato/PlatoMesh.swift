@@ -8,11 +8,13 @@ public class PlatoMesh: MeshMetal {
 
     var model: PlatoModel!
 
-    init(_ platoFlo: PlatoFlo) {
-        super.init(DepthRendering(
-            immer: RenderDepth(.none, .counterClockwise, .greaterEqual, true), // back hidden
-            metal: RenderDepth(.none, .counterClockwise, .less,         true)))
-        
+    init(_ platoFlo: PlatoFlo,
+         _ renderState: RenderState) {
+        let immersed = RenderDepth(.none, .counterClockwise, .greaterEqual, true) // back hidden
+        let windowed = RenderDepth(.none, .counterClockwise, .less,         true)
+        let depthRendering = DepthRendering(immersed, windowed, renderState)
+        super.init(depthRendering)
+
         let nameFormats: [VertexNameFormat] = [
             ("pos0",     .float4),
             ("pos1",     .float4),

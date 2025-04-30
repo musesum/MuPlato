@@ -34,7 +34,7 @@ class PlatoCounter {
         self.harmonic = harmonic
         self.phase = phase
         platoFlo.counter = phase * phaseSteps
-        //test()
+        //testAudio()
     }
 
     func setPhaseHarmonic(_ phaseNow: Int,
