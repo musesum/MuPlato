@@ -25,7 +25,7 @@ open class PlatoFlo {
         convex˚   = plato.bind("convex"  ) { f,_ in self.convex   = f.float }
         run˚      = plato.bind("run"     ) { f,_ in self.run      = f.bool  }
         wire˚     = plato.bind("wire"    ) { f,_ in self.wire     = f.bool  }
-        alpha˚    = plato.bind("_alpha"   ) { f,_ in self.alpha    = f.float }
+        alpha˚    = plato.bind("alpha"   ) { f,_ in self.alpha    = f.float }
         counter˚  = plato.bind("_counter") { f,_ in self.counter  = f.int   }
     }
 }
