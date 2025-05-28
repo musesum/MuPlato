@@ -68,7 +68,7 @@ public class PlatoNode: RenderNode {
             reflect : Float(platoFlo.material.y),
             alpha   : Float(platoFlo.alpha),     
             depth   : Float(platoFlo.material.x),
-            invert  : Float(platoFlo.material.z),
+            invert  : Float(1),//....(platoFlo.material.z),
             zoom    : platoFlo.zoom            )
 
         let size = MemoryLayout<PlatoShading>.stride
