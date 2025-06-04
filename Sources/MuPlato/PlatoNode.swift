@@ -93,9 +93,9 @@ public class PlatoNode: RenderNode {
             print("\t👁️p * cameraPos ", viewModel.digits())
         }
     }
-
-    override public func renderNode(_ renderEnc: MTLRenderCommandEncoder,
-                                    _ renderState: RenderState) {
+    
+    override public func renderShader(_ renderEnc: MTLRenderCommandEncoder,
+                                      _ renderState: RenderState) {
         guard let renderPipelineState else { return }
 
         platoMesh.eyeBuf?.setUniformBuf(renderEnc)
