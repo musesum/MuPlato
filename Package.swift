@@ -4,7 +4,8 @@ import PackageDescription
 
 let package = Package(
     name: "MuPlato",
-    platforms: [.iOS(.v17)],
+    platforms: [.iOS(.v17),
+                .visionOS(.v2)],
     products: [.library(name: "MuPlato", targets: ["MuPlato"])],
     dependencies: [
         .package(url: "https://github.com/musesum/MuFlo.git", branch: "main"),

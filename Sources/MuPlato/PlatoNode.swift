@@ -123,7 +123,11 @@ public class PlatoNode: RenderNode {
         updatePlatoUniforms()
         
         let cameraPos = vector_float4([0, 1, 4 * (platoFlo.zoom - 1), 1]) //???
-        platoMesh.eyeBuf?.updateEyeUniforms(drawable, deviceAnchor, cameraPos, "👁️Plato")
+        if #available(visionOS 2.0, *) {
+            platoMesh.eyeBuf?.updateEyeUniforms(drawable, deviceAnchor, cameraPos, "👁️Plato")
+        } else {
+            // Fallback on earlier versions
+        }
     }
 #endif
 
