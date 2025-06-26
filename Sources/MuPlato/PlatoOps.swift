@@ -3,7 +3,7 @@
 import Foundation
 import AVFoundation
 
-public struct PlatoOps: OptionSet {
+public struct PlatoOps: OptionSet, Sendable {
 
     public let rawValue: Int
 

@@ -7,7 +7,7 @@ import MuFlo
 
 class PhaseTriangles {
 
-    static var logVertex = false
+    nonisolated(unsafe) static var logVertex = false
 
     var triRanges: [TriRange]
     var triCount: Int { return triRanges.count * 3 }

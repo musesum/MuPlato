@@ -3,13 +3,13 @@
 import Foundation
 
 /// point along range p0...p1 at interval 0...1
-struct VertexRange {
+struct VertexRange : @unchecked Sendable{
     let p0: Float3 // point at 0
     let p1: Float3 // point at 1
     let id: Int // unique ID
     var harmonic: Harmonic  = 0 // > 0 was created by subdividing triangle
 
-    static var ID = Plato.Max.rawValue + 1
+    nonisolated(unsafe) static var ID = Plato.Max.rawValue + 1
     static func nextId() -> Int {
         ID += 1
         return ID

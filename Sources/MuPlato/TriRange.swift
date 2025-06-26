@@ -4,7 +4,7 @@ import Foundation
 import MuFlo
 
 /// ranged triangle for uniform 0...1
-class TriRange {
+class TriRange: @unchecked Sendable {
 
     let v0: VertexRange // ranged vertex 0...1
     let v1: VertexRange // ranged vertex 0...1
@@ -27,16 +27,16 @@ class TriRange {
     typealias Phase = Int
     typealias HashIdPhase = [Hash: (Identity, Phase)]
 
-    static var ID: Identity = 0
+    nonisolated(unsafe) static var ID: Identity = 0
     static func nextId() -> Identity {
         ID += 1
         return ID
     }
 
-    static var phaseNow: Phase = 0
-    static var hashIdPhase = HashIdPhase()
-    static var retiring = [Hash]()
-    static var assigning = Set<Identity>()
+    nonisolated(unsafe) static var phaseNow: Phase = 0
+    nonisolated(unsafe) static var hashIdPhase = HashIdPhase()
+    nonisolated(unsafe) static var retiring = [Hash]()
+    nonisolated(unsafe) static var assigning = Set<Identity>()
 
     static func updatePhase(_ phaseNext: Phase) {
         if phaseNow != phaseNext {

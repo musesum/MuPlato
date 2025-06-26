@@ -8,7 +8,7 @@ import MuFlo
 import CompositorServices
 #endif
 
-public class PlatoNode: RenderNode {
+public class PlatoNode: RenderNode, @unchecked Sendable {
 
     var platoMesh    : PlatoMesh!
     var platoShading : PlatoShading!
@@ -79,18 +79,20 @@ public class PlatoNode: RenderNode {
     override open func updateUniforms() {
 
         updatePlatoUniforms()
+        Task {
+            let orientation = await Motion.shared.updateDeviceOrientation()
 
-        guard let orientation = Motion.shared.sceneOrientation else { return }
-        let cameraPos = vector_float4([0, 0, 4 * (platoFlo.zoom - 1), 1])
-        let viewModel = translate4x4(cameraPos) * orientation
-        let projection = project4x4(pipeline.layer.drawableSize)
+            let cameraPos = vector_float4([0, 0, 4 * (platoFlo.zoom - 1), 1])
+            let viewModel = translate4x4(cameraPos) * orientation
+            let projection = project4x4(pipeline.layer.drawableSize)
 
-        platoMesh.eyeBuf?.updateEyeUniforms(projection, viewModel)
+            platoMesh.eyeBuf?.updateEyeUniforms(projection, viewModel)
 
-        NoTimeLog("👁️plato", interval: 4) {
-            print("\t👁️p projection  ", projection.digits())
-            print("\t👁️p orientation ", orientation.digits())
-            print("\t👁️p * cameraPos ", viewModel.digits())
+            NoTimeLog("👁️plato", interval: 4) {
+                print("\t👁️p projection  ", projection.digits())
+                print("\t👁️p orientation ", orientation.digits())
+                print("\t👁️p * cameraPos ", viewModel.digits())
+            }
         }
     }
     
