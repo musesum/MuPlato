@@ -1,7 +1,7 @@
 //  created by musesum on 2/28/23.
 
 import Foundation
-
+import MuFlo // PrintLog
 // index ranged  0...1
 
 public struct PlatoVertex {
@@ -43,7 +43,7 @@ func logVert01(_ v: PlatoVertex,_ i: Int, normals: Bool = false) {
     } else {
         str +=  "f:\(faceId) v:\(vertId) \(hStr)"
     }
-    print(str)
+    PrintLog(str)
 
     func s(_ f: Float) -> String {
         return (f < 0 ? "" : " ") + f.digits(1...1)
