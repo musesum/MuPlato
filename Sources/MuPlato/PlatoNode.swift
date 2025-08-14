@@ -73,7 +73,7 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
 
         let size = MemoryLayout<PlatoShading>.stride
         memcpy(platoMesh.mtlBuffer.contents(), &platoShading, size)
-        range01˚?.updateFloMTLBuffer(platoMesh.model.counter.range01)
+        range01˚?.updateFloMTLNums([platoMesh.model.counter.range01])
     }
 
     override open func updateUniforms() {
