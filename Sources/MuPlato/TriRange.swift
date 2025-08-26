@@ -114,7 +114,7 @@ class TriRange: @unchecked Sendable {
             t += "(\(v0.idStr()) \(v1.idStr()) \(v2.idStr()))".pad(24)
             t += "[(\(v0.digits(0)) \(v1.digits(0)) \(v2.digits(0)))".pad(54)
             t += "(\(v0.digits(1)) \(v1.digits(1)) \(v2.digits(1)))]"
-            print("\(s) \(t)")
+            PrintLog("\(s) \(t)")
         } else {
             //print(str, terminator: "")
         }

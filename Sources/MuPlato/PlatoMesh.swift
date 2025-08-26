@@ -10,8 +10,16 @@ public class PlatoMesh: MeshMetal {
 
     init(_ platoFlo: PlatoFlo,
          _ renderState: RenderState) {
-        let immersed = RenderDepth(.none, .counterClockwise, .greaterEqual, true) // back hidden
-        let windowed = RenderDepth(.none, .counterClockwise, .less,         true)
+        
+        let immersed = RenderDepth(cull    : .none,
+                                   winding : .counterClockwise,
+                                   compare : .greaterEqual,
+                                   write   : true) // back hidden
+
+        let windowed = RenderDepth(cull    : .none,
+                                   winding : .counterClockwise,
+                                   compare : .less,
+                                   write   : true)
         let depthRendering = DepthRendering(immersed, windowed, renderState)
         super.init(depthRendering)
 
