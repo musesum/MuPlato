@@ -43,7 +43,7 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
                         vertex: "platoVertex",
                         fragment: "platoFragment")
 
-        renderPipelineState = makeRenderState(platoMesh.metalVD)
+        renderPipelineState = makeRenderState(platoMesh.mtlVD)
     }
     override open func makeResources() {
 
