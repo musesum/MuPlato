@@ -32,12 +32,9 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
         cubeTex˚ = pipeNode˚.superBindPath("cube")
         range01˚ = pipeNode˚.superBindPath("range01")
         shading˚ = pipeNode˚.superBindPath("shading")
-
-        makeRenderPipeline()
-        makeResources()
     }
-    
-    func makeRenderPipeline() {
+
+    override public func makePipeline() {
         shader = Shader(pipeline,
                         file: "render.plato",
                         vertex: "platoVertex",
@@ -45,7 +42,7 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
 
         renderPipelineState = makeRenderState(platoMesh.mtlVD)
     }
-    override open func makeResources() {
+    override public func makeResources() {
 
         platoMesh.mtlBuffer = pipeline.device.makeBuffer(
             length: MemoryLayout<PlatoShading>.stride,
@@ -55,31 +52,13 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
 
         range01˚?.updateMtlBuffer()
         shading˚?.buffer = platoMesh.mtlBuffer
-        super.makeResources()
     }
 
-    func updatePlatoUniforms() {
 
-        platoMesh.updateMetal()
-        let platoFlo = platoMesh.model.platoFlo
-
-        platoShading = PlatoShading(
-            convex  : platoFlo.convex,
-            reflect : Float(platoFlo.material.y),
-            alpha   : Float(platoFlo.alpha),     
-            depth   : Float(platoFlo.material.x),
-            invert  : Float(1),//....(platoFlo.material.z),
-            zoom    : platoFlo.zoom            )
-
-        let size = MemoryLayout<PlatoShading>.stride
-        memcpy(platoMesh.mtlBuffer.contents(), &platoShading, size)
-        let range01 = Double(platoMesh.model.counter.range01)
-        range01˚?.setNameNums([("x",range01)],[],Visitor(0))
-    }
 
     override open func updateUniforms() {
 
-        updatePlatoUniforms()
+        updatePlato()
         Task {
             let orientation = await Motion.shared.updateDeviceOrientation()
 
@@ -94,6 +73,24 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
                 print("\t👁️p orientation ", orientation.digits())
                 print("\t👁️p * cameraPos ", viewModel.digits())
             }
+        }
+        func updatePlato() {
+
+            platoMesh.updateMetal()
+            let platoFlo = platoMesh.model.platoFlo
+
+            platoShading = PlatoShading(
+                convex  : platoFlo.convex,
+                reflect : Float(platoFlo.material.y),
+                alpha   : Float(platoFlo.alpha),
+                depth   : Float(platoFlo.material.x),
+                invert  : Float(1),//....(platoFlo.material.z),
+                zoom    : platoFlo.zoom            )
+
+            let size = MemoryLayout<PlatoShading>.stride
+            memcpy(platoMesh.mtlBuffer.contents(), &platoShading, size)
+            let range01 = Double(platoMesh.model.counter.range01)
+            range01˚?.setNameNums([("x",range01)],[],Visitor(0))
         }
     }
     
@@ -120,17 +117,17 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
     
 #if os(visionOS)
     /// Update projection and rotation
-    override public func updateUniforms(_ drawable: LayerRenderer.Drawable,
-                                        _ deviceAnchor: DeviceAnchor?) {
+    override public func renderShader(
+        _ renderEnc     : MTLRenderCommandEncoder,
+        _ renderState   : RenderState,
+        _ drawable      : LayerRenderer.Drawable,
+        _ deviceAnchor  : DeviceAnchor?) {
 
-        updatePlatoUniforms()
-        
-        let cameraPos = vector_float4([0, 1, 4 * (platoFlo.zoom - 1), 1]) //???
-        if #available(visionOS 2.0, *) {
-            platoMesh.eyeBuf?.updateEyeUniforms(drawable, deviceAnchor, cameraPos, "👁️Plato")
-        } else {
-            // Fallback on earlier versions
-        }
+        renderShader(renderEnc, renderState)
+
+        let cameraPos = vector_float4([0, 1, 4 * (platoFlo.zoom - 1), 1])
+        platoMesh.eyeBuf?.updateEyeUniforms(drawable, deviceAnchor, cameraPos, "👁️Plato")
+
     }
 #endif
 

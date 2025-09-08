@@ -30,3 +30,23 @@ open class PlatoFlo {
     }
 }
 
+open class ElipseFlo {
+
+
+    private var harmonic˚ : Flo? ; var harmonic = Int(1)
+    private var convex˚   : Flo? ; var convex   = Float(0.95)
+    private var material˚ : Flo? ; var material = SIMD3<Float>(x: 0.0, y: 0.0, z: 1.0)
+    private var zoom˚     : Flo? ; var zoom     = Float(0)
+    private var wire˚     : Flo? ; var wire     = false
+    private var alpha˚    : Flo? ; var alpha    = Float(1)
+
+    init(_ root˚: Flo) {
+        let plato = root˚.bind("plato")
+        zoom˚     = plato.bind("zoom"    ) { f,_ in self.zoom     = f.float }
+        material˚ = plato.bind("material") { f,_ in self.material = f.xyz   }
+        harmonic˚ = plato.bind("harmonic") { f,_ in self.harmonic = f.int   }
+        wire˚     = plato.bind("wire"    ) { f,_ in self.wire     = f.bool  }
+        alpha˚    = plato.bind("alpha"   ) { f,_ in self.alpha    = f.float }
+    }
+}
+
