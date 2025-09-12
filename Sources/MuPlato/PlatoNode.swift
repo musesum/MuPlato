@@ -74,26 +74,26 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
                 print("\t👁️p * cameraPos ", viewModel.digits())
             }
         }
-        func updatePlato() {
-
-            platoMesh.updateMetal()
-            let platoFlo = platoMesh.model.platoFlo
-
-            platoShading = PlatoShading(
-                convex  : platoFlo.convex,
-                reflect : Float(platoFlo.material.y),
-                alpha   : Float(platoFlo.alpha),
-                depth   : Float(platoFlo.material.x),
-                invert  : Float(1),//....(platoFlo.material.z),
-                zoom    : platoFlo.zoom            )
-
-            let size = MemoryLayout<PlatoShading>.stride
-            memcpy(platoMesh.mtlBuffer.contents(), &platoShading, size)
-            let range01 = Double(platoMesh.model.counter.range01)
-            range01˚?.setNameNums([("x",range01)],[],Visitor(0))
-        }
     }
-    
+    func updatePlato() {
+
+        platoMesh.updateMetal()
+        let platoFlo = platoMesh.model.platoFlo
+
+        platoShading = PlatoShading(
+            convex  : platoFlo.convex,
+            reflect : Float(platoFlo.material.y),
+            alpha   : Float(platoFlo.alpha),
+            depth   : Float(platoFlo.material.x),
+            invert  : Float(1),//....(platoFlo.material.z),
+            zoom    : platoFlo.zoom            )
+
+        let size = MemoryLayout<PlatoShading>.stride
+        memcpy(platoMesh.mtlBuffer.contents(), &platoShading, size)
+        let range01 = Double(platoMesh.model.counter.range01)
+        range01˚?.setNameNums([("x",range01)],[],Visitor(0))
+    }
+
     override public func renderShader(_ renderEnc: MTLRenderCommandEncoder,
                                       _ renderState: RenderState) {
         guard let renderPipelineState else { return }
@@ -117,17 +117,14 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
     
 #if os(visionOS)
     /// Update projection and rotation
-    override public func renderShader(
-        _ renderEnc     : MTLRenderCommandEncoder,
-        _ renderState   : RenderState,
+    override public func updateUniforms(
         _ drawable      : LayerRenderer.Drawable,
         _ deviceAnchor  : DeviceAnchor?) {
 
-        renderShader(renderEnc, renderState)
+        updatePlato()
 
-        let cameraPos = vector_float4([0, 1, 4 * (platoFlo.zoom - 1), 1])
+            let cameraPos = vector_float4([0, 1, 4 * (platoFlo.zoom - 1), 1])
         platoMesh.eyeBuf?.updateEyeUniforms(drawable, deviceAnchor, cameraPos, "👁️Plato")
-
     }
 #endif
 
