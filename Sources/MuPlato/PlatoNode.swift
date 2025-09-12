@@ -118,13 +118,13 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
 #if os(visionOS)
     /// Update projection and rotation
     override public func updateUniforms(
-        _ drawable      : LayerRenderer.Drawable,
-        _ deviceAnchor  : DeviceAnchor?) {
+        _ drawable : LayerRenderer.Drawable,
+        _ anchor   : DeviceAnchor?) {
 
         updatePlato()
 
             let cameraPos = vector_float4([0, 1, 4 * (platoFlo.zoom - 1), 1])
-        platoMesh.eyeBuf?.updateEyeUniforms(drawable, deviceAnchor, cameraPos, "👁️Plato")
+        platoMesh.eyeBuf?.updateEyeUniforms(drawable, anchor, cameraPos, "👁️Plato")
     }
 #endif
 
