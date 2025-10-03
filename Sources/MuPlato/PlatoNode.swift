@@ -48,7 +48,7 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
             length: MemoryLayout<PlatoShading>.stride,
             options: .cpuCacheModeWriteCombined)!
         platoMesh.mtlBuffer?.label = "PlatoMesh"
-        platoMesh.eyeBuf = EyeBuf("PlatoEyes", far: false)
+        platoMesh.eyeBuf = EyeBuf("PlatoEyes", pipeline, far: false)
         
         range01˚?.updateMtlBuffer()
         shading˚?.buffer = platoMesh.mtlBuffer
@@ -58,18 +58,9 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
         updatePlato()
         Task {
             let orientation = await Motion.shared.updateDeviceOrientation()
-            
             let cameraPos = vector_float4([0, 0, 4 * (platoFlo.zoom - 1), 1])
             let viewModel = translate4x4(cameraPos) * orientation
-            let projection = project4x4(pipeline.layer.drawableSize)
-            
-            platoMesh.eyeBuf?.updateEyeUniforms(projection, viewModel)
-            
-            NoTimeLog("👁️plato", interval: 4) {
-                print("\t👁️p projection  ", projection.digits())
-                print("\t👁️p orientation ", orientation.digits())
-                print("\t👁️p * cameraPos ", viewModel.digits())
-            }
+            platoMesh.eyeBuf?.updateMetalEyeUniforms(viewModel)
         }
     }
     func updatePlato() {
@@ -82,7 +73,7 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
             reflect : Float(platoFlo.material.y),
             alpha   : Float(platoFlo.alpha),
             depth   : Float(platoFlo.material.x),
-            invert  : Float(1),//....(platoFlo.material.z),
+            invert  : Float(1), //....(platoFlo.material.z),
             zoom    : platoFlo.zoom            )
         
         let size = MemoryLayout<PlatoShading>.stride
@@ -119,9 +110,7 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
         _ anchor   : DeviceAnchor?) {
             
             updatePlato()
-            
-            let cameraPos = vector_float4([0, 1, 4 * (platoFlo.zoom - 1), 1])
-            platoMesh.eyeBuf?.updateEyeUniforms(drawable, anchor, cameraPos, "👁️Plato")
+            platoMesh.eyeBuf?.updateVisionEyeUniforms(drawable, anchor, platoFlo.zoom, "👁️Plato")
         }
 #endif
     

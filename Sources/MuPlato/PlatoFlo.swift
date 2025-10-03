@@ -18,7 +18,7 @@ open class PlatoFlo {
 
     init(_ root˚: Flo) {
         let plato = root˚.bind("plato")
-        zoom˚     = plato.bind("zoom"    ) { f,_ in self.zoom     = f.float }
+        zoom˚     = plato.bind("zoom" )    { f,_ in self.zoom     = f.float }
         material˚ = plato.bind("material") { f,_ in self.material = f.xyz   }
         harmonic˚ = plato.bind("harmonic") { f,_ in self.harmonic = f.int   }
         phase˚    = plato.bind("phase"   ) { f,_ in self.phase    = f.int   }
