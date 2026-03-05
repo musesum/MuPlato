@@ -34,7 +34,7 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
         shading˚ = pipeNode˚.superBindPath("shading")
     }
     
-    override public func makePipeline() {
+    override public func makeShader() {
         shader = Shader(pipeline,
                         file: "render.plato",
                         vertex: "platoVertex",
