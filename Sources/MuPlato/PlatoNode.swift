@@ -82,27 +82,34 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
         range01˚?.setNameNums([("x",range01)],[],Visitor(0))
     }
     
-    override public func renderShader(_ renderEnc: MTLRenderCommandEncoder,
-                                      _ renderState: RenderState) {
+    override public func renderShader(_ encoder: MTLRenderCommandEncoder,
+                                      _ state: RenderState) {
         guard let renderPipelineState else { return }
         
-        platoMesh.eyeBuf?.setUniformBuf(renderEnc)
+        platoMesh.eyeBuf?.setUniformBuf(encoder)
         
         range01˚?.updateMtlBuffer()
         shading˚?.updateMtlBuffer()
         
-        renderEnc.setFragmentTexture (inTex˚,    index: 0)
-        renderEnc.setFragmentTexture (palTex˚,   index: 2)
-        renderEnc.setFragmentTexture (cubeTex˚,  index: 4)
-        renderEnc.setVertexBuffer    (range01˚,  index: 1)
-        renderEnc.setFragmentBuffer  (shading˚,  index: 1)
-        renderEnc.setTriangleFillMode(platoFlo.wire ? .lines : .fill)
-        renderEnc.setRenderPipelineState(renderPipelineState)
+        encoder.setFragmentTexture (inTex˚,    index: 0)
+        encoder.setFragmentTexture (palTex˚,   index: 2)
+        encoder.setFragmentTexture (cubeTex˚,  index: 4)
+        encoder.setVertexBuffer    (range01˚,  index: 1)
+        encoder.setFragmentBuffer  (shading˚,  index: 1)
+        encoder.setTriangleFillMode(platoFlo.wire ? .lines : .fill)
+        encoder.setRenderPipelineState(renderPipelineState)
         
-        platoMesh.drawMesh(renderEnc, renderState)
+        platoMesh.drawMesh(encoder, state)
         platoMesh.updateCounter()
     }
-    
+    public override func logShader(_ logging: inout String,
+                                   _ inOut: String) {
+
+        let inAdr = inTex˚?.texPtr ?? ""
+        let inOut = "(\(inAdr))"
+        super.logShader(&logging, inOut)
+    }
+
 #if os(visionOS)
     /// Update projection and rotation
     override public func updateUniforms(
