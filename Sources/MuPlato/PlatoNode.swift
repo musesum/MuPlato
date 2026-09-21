@@ -35,8 +35,7 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
     }
     
     override public func makeShader() {
-        shader = Shader(pipeline,
-                        file: "render.plato",
+        shader = Shader(pipeline, "render.plato",
                         vertex: "platoVertex",
                         fragment: "platoFragment")
         
@@ -58,21 +57,40 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
         updatePlato()
         Task {
             let orientation = await Motion.shared.updateDeviceOrientation()
-            let cameraPos = vector_float4([0, 0, 4 * (platoFlo.zoom - 1), 1])
-            let viewModel = translate4x4(cameraPos) * orientation
-            platoMesh.eyeBuf?.updateMetalEyeUniforms(viewModel)
+            // the cube's view: plato turns and zooms with plato.cube
+            let nav = CubeNav.shared
+            let eyeZ = 4 - 4 * platoFlo.zoom // zoom walks the eye in
+            let cameraPos = vector_float4([0, 0, -eyeZ, 1])
+            let viewModel = translate4x4(cameraPos) * nav.view(orientation)
+            platoMesh.eyeBuf?.updateMetalEyeUniforms(viewModel, distance: 4, eyeDistance: eyeZ,
+                                                     frustum: platoFlo.frustum, zoom: nav.zoom)
         }
+    }
+
+    /// canvas touch began, in view points: true when the sight ray meets the
+    /// object — the stroke is muted for that touch and, with the spring
+    /// above zero, the springs take the impulse at the hit point
+    public func touchBegan(_ point: CGPoint) -> Bool {
+        guard pipeFlo˚.val("on") ?? 0 > 0,
+              let hit = hitPoint(point) else { return false }
+        if platoFlo.spring > 0 {
+            platoMesh.model.springs?.impulse(at: hit)
+        }
+        return true
     }
     func updatePlato() {
         
         platoMesh.updateMetal()
+        platoMesh.updateSprings()
         let platoFlo = platoMesh.model.platoFlo
         
         platoShading = PlatoShading(
             convex  : platoFlo.convex,
             reflect : Float(platoFlo.material.y),
             alpha   : Float(platoFlo.alpha),
-            depth   : Float(platoFlo.material.x),
+            // the menu's opacity reads the way it sounds: 1 opaque, 0 the
+            // most see-through, which is the shading's own depth run backwards
+            depth   : Float(1 - platoFlo.material.x),
             invert  : Float(1), //....(platoFlo.material.z),
             zoom    : platoFlo.zoom            )
         

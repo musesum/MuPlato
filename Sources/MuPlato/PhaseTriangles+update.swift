@@ -9,7 +9,7 @@ import MuFlo
 
 extension PhaseTriangles {
 
-    func updateTriangles(_ convex: Float, _ phase: Int) {
+    func updateTriangles(_ convex: Float, _ phase: Int, smooth: Float = 0) {
 
         vertices = [PlatoVertex](repeating: PlatoVertex(), count: triCount)
         indices =  [UInt32]     (repeating:             0, count: triCount)
@@ -52,14 +52,66 @@ extension PhaseTriangles {
             vertices[index-2].norm1 = n1
             vertices[index-1].norm1 = n1
         }
+        setNormals(smooth)
+    }
+    /// norm0/norm1.xyz = the unit normal at each end of the morph: the face
+    /// normal when blend is 0, else the area-weighted sum of the outward face
+    /// normals at the welded position. norm.w carries the blend: the shader
+    /// mixes its live face normal (from the three morphed corners) into this
+    /// vertex normal by w, so the face part follows the drawn triangle at
+    /// every range01 and the vertex part is shared by coincident corners.
+    /// a sum that cancels to zero (back-to-back slivers where the tables
+    /// fold) falls back to the radial direction, which every corner at that
+    /// position shares, so no seam opens there
+    func setNormals(_ blend: Float) {
+        let blend = min(max(blend, 0), 1)
+        guard blend > 0 else {
+            for i in vertices.indices {
+                let v = vertices[i]
+                vertices[i].norm0 = pnt4f(unit(v.norm0.xyz, v.pos0.xyz), 0)
+                vertices[i].norm1 = pnt4f(unit(v.norm1.xyz, v.pos1.xyz), 0)
+            }
+            return
+        }
+        var sum0 = [String: SIMD3<Float>]()
+        var sum1 = [String: SIMD3<Float>]()
+        for t in stride(from: 0, to: vertices.count - 2, by: 3) {
+            let (a, b, c) = (vertices[t], vertices[t+1], vertices[t+2])
+            let n0 = outward(a.pos0.xyz, b.pos0.xyz, c.pos0.xyz)
+            let n1 = outward(a.pos1.xyz, b.pos1.xyz, c.pos1.xyz)
+            for v in [a, b, c] {
+                sum0[PlatoSprings.weldKey(v.pos0), default: .zero] += n0
+                sum1[PlatoSprings.weldKey(v.pos1), default: .zero] += n1
+            }
+        }
+        for i in vertices.indices {
+            let v = vertices[i]
+            let vert0 = unit(sum0[PlatoSprings.weldKey(v.pos0)] ?? .zero, v.pos0.xyz)
+            let vert1 = unit(sum1[PlatoSprings.weldKey(v.pos1)] ?? .zero, v.pos1.xyz)
+            vertices[i].norm0 = pnt4f(vert0, blend)
+            vertices[i].norm1 = pnt4f(vert1, blend)
+        }
+    }
+    /// raw cross product (length = 2× area) turned away from the origin;
+    /// the solids are star-shaped about it
+    func outward(_ v0: SIMD3<Float>,
+                 _ v1: SIMD3<Float>,
+                 _ v2: SIMD3<Float>) -> SIMD3<Float> {
+        let n = simd_cross(v1-v0, v2-v0)
+        return simd_dot(n, v0+v1+v2) < 0 ? -n : n
+    }
+    /// unit v, else unit fallback, else zero -- never NaN
+    func unit(_ v: SIMD3<Float>, _ fallback: SIMD3<Float>) -> SIMD3<Float> {
+        let l = simd_length(v)
+        if l > 1e-9 { return v / l }
+        let fl = simd_length(fallback)
+        return fl > 1e-9 ? fallback / fl : .zero
     }
     func normalize(_ v0: SIMD3<Float>,
                    _ v1: SIMD3<Float>,
                    _ v2: SIMD3<Float>) -> SIMD4<Float> {
 
-        let v10 = v1-v0
-        let v20 = v2-v0
-        let n = simd_cross(v10,v20)
-        return SIMD4<Float>(n.x, n.y, n.z, 0)
+        let u = unit(outward(v0, v1, v2), .zero)
+        return SIMD4<Float>(u.x, u.y, u.z, 0)
     }
 }

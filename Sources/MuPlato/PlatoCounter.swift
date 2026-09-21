@@ -22,7 +22,7 @@ class PlatoCounter {
 
     let phaseSteps: Int
     var cycleSteps: Int
-    let harmonics = 6  // maximum number of subdivisions
+    let harmonics = 6  // highest subdivision index, 0...harmonics
     public let phases = 11    // number of running phases
 
     var range01 : Float = 0
@@ -37,11 +37,22 @@ class PlatoCounter {
         //testAudio()
     }
 
-    func setPhaseHarmonic(_ phaseNow: Int,
-                          _ harmonicNow: Int) {
-        phase  = max(0, min(phaseNow, phases))
-        harmonic = max(0, min(harmonicNow, harmonics))
+    /// anchor the sweep at the head of a phase; `phases` counts phases, so the
+    /// highest index is one less. rising direction keeps the next step inside
+    /// the phase just chosen instead of walking back out of it
+    func setPhase(_ phaseNow: Int) {
+        phase = max(0, min(phaseNow, phases - 1))
+        counterDirection = .up
         platoFlo.counter = (phase * phaseSteps)
+        // only next() derives range01; with the sweep held (ico) a stale
+        // fraction would leave the mesh mid-morph
+        range01 = 0
+    }
+    /// subdivision only — the sweep keeps its place
+    func setHarmonic(_ harmonicNow: Int) {
+        harmonic = max(0, min(harmonicNow, harmonics))
+        harmonicDirection = .up
+        newHarmonic = true
     }
     func next() {
 
@@ -59,16 +70,18 @@ class PlatoCounter {
             // new harmonic
 
             harmonic += harmonicDirection == .up ? 1 : -1
-            if harmonic >= harmonics {
-                harmonic = 5
+            if harmonic > harmonics {
+                // reflect one below the ceiling, which was just rendered
+                harmonic = harmonics - 1
                 harmonicDirection = .down
-                newHarmonic = true
 
             } else if harmonic < 0 {
-                harmonic = 0
+                harmonic = 1
                 harmonicDirection = .up
-                newHarmonic = true
             }
+            // every step is a new subdivision, not only the two reflections;
+            // without this the mesh stays trisected at the previous harmonic
+            newHarmonic = true
         }
         if phase != platoFlo.counter / phaseSteps {
             phase = platoFlo.counter / phaseSteps
