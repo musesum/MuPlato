@@ -57,10 +57,11 @@ public class PlatoMesh: MeshMetal {
 
     var springsWritten = false // vertex buffer carries spring offsets
 
-    /// spring above zero: step the relaxation and write displaced positions
-    /// and normals into the vertex buffer; at zero no step runs (impulses
-    /// dropped) and the built vertices are restored once
-    func updateSprings() {
+    /// spring above zero: step the relaxation, held presses sunk up to
+    /// pressDepth ball radii, and write displaced positions and normals
+    /// into the vertex buffer; at zero no step runs (impulses dropped,
+    /// presses ignored) and the built vertices are restored once
+    func updateSprings(presses: [SpringPress] = [], pressDepth: Float = 0) {
         guard let springs = model.springs,
               let vb = mtkMesh?.vertexBuffers.first else { return }
         let balloon = model.platoFlo.spring
@@ -70,7 +71,8 @@ public class PlatoMesh: MeshMetal {
         // drawMesh binds this buffer at vb.offset, so the writes start there too
         let base = (vb.buffer.contents() + vb.offset).bindMemory(to: PlatoVertex.self, capacity: count)
         if on {
-            springs.step(balloon: balloon, range01: model.counter.range01)
+            springs.step(balloon: balloon, range01: model.counter.range01,
+                         presses: presses, pressDepth: pressDepth)
             let blend = min(max(model.platoFlo.normal, 0), 1)
             for i in 0 ..< count {
                 let d = springs.offset(i)

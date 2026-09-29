@@ -20,6 +20,12 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
     private var palTex˚  : Flo?
     private var range01˚ : Flo?
     private var shading˚ : Flo?
+
+    /// held presses on the spring ball by touch id: the touch (main) thread
+    /// writes them, the render thread steps them (PlatoNode+Press)
+    let pressLock = NSLock()
+    var presses = [Int: SpringPress]()
+    var ballRadius = Float(0) // rest radius as last stepped, for main-thread sight rays; under pressLock
     
     public override init(_ pipeline : Pipeline,
                          _ pipeNode˚ : Flo) {
@@ -67,21 +73,14 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
         }
     }
 
-    /// canvas touch began, in view points: true when the sight ray meets the
-    /// object — the stroke is muted for that touch and, with the spring
-    /// above zero, the springs take the impulse at the hit point
-    public func touchBegan(_ point: CGPoint) -> Bool {
-        guard pipeFlo˚.val("on") ?? 0 > 0,
-              let hit = hitPoint(point) else { return false }
-        if platoFlo.spring > 0 {
-            platoMesh.model.springs?.impulse(at: hit)
-        }
-        return true
-    }
     func updatePlato() {
         
         platoMesh.updateMetal()
-        platoMesh.updateSprings()
+        let held = pressLock.withLock { Array(presses.values) }
+        platoMesh.updateSprings(presses: held, pressDepth: self.platoFlo.press)
+        if let r = platoMesh.model.springs?.restRadius {
+            pressLock.withLock { ballRadius = r }
+        }
         let platoFlo = platoMesh.model.platoFlo
         
         platoShading = PlatoShading(

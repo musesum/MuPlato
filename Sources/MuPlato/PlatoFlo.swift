@@ -14,6 +14,7 @@ open class PlatoFlo {
     private var alpha˚    : Flo? ; var alpha    = Float(1)
     private var frustum˚  : Flo? ; var frustum  = Float(0) // fov widen: 0 neutral, 1 the radial spokes
     private var ico˚      : Flo? ; var ico      = false        // geodesic ball on springs (WinSky) instead of the centroid-trisected solids
+    private var press˚    : Flo? ; var press    = Float(0.5)   // held-press depth at full pressure, ball radii; 0 only the tap ring
 
     /// balloon pressure: the ico ball is the WinSky spring shape at its
     /// classic pressure; the rigid solids never spring
@@ -63,6 +64,9 @@ open class PlatoFlo {
         // an archive restores ico before this binds; the phase header's
         // toggle shows it, so start from it too
         if let on = ico˚?.val("x") { ico = on > 0 }
+        press˚    = plato.bind("press"   ) { f,_ in self.press    = f.float }
+        // an archive restores press before this binds, as it does ico
+        if let x = press˚?.val("x") { press = Float(x) }
     }
 }
 

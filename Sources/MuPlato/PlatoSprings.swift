@@ -3,13 +3,24 @@
 import simd
 import Foundation
 
+/// a held touch on the ball: a round rigid tip sunk toward the centre
+struct SpringPress {
+    let id: Int
+    let dir: SIMD3<Float>   // unit: centre → the press on the rest sphere
+    let pressure: Float     // 0…1
+    let foot: Float         // footprint radius, model units; 0 is the narrowest
+}
+
 /// WinSky Shape port: vertices welded by position, pulled home by k1, held
 /// to their edge lengths by k2, pushed out from the centroid by the balloon
 /// pressure (Shape::addNormal, n = p − centroid), velocity averaged with the
 /// neighbours (filterVelocity) and decayed by a drag that ramps once from
 /// 0.7 to 0.99 (addVelocity); a touch (Shape::pick) thrusts the near
 /// hemisphere toward the origin by 10^-d² of the touch strength. a constant
-/// trim per vertex (updateTrim) rests the swollen ball on the built sphere
+/// trim per vertex (updateTrim) rests the swollen ball on the built sphere.
+/// a held touch sinks a rigid round tip into the ball as deep as its
+/// pressure (applyPresses); the springs push back against it and ring down
+/// once it lifts
 final class PlatoSprings {
 
     private(set) var slotOf = [Int]()          // vertex index -> slot
@@ -39,6 +50,17 @@ final class PlatoSprings {
     private var trimBalloon = Float.nan
     private var trimRange = Float.nan
     private var pristine = true                // not yet stepped: starts at its rest
+    private(set) var meanEdge = Float(0)       // mean home edge length
+    private var tipDepth = [Int: Float]()      // press id -> eased tip depth, model units
+    private var indent = [Float]()             // per slot: how far the tips sink its rest
+    private(set) var pushBack = Float(0)       // Σ how far the tips set slots back, last step
+    var restRadius: Float { radius * inflate }
+
+    static let tipEase   = Float(0.3) // a tip moves this share of the way each step: 90% in 7
+    static let footEdges = Float(2)   // narrowest footprint, mean edges: a face-centred press keeps its depth
+    static let footMax   = Float(0.5) // widest, ball radii; wins over footEdges on a coarse ball
+    static let slopeMax  = Float(3)   // tip depth ≤ 3 footprints, else a narrow press folds the mesh for good
+    static let depthMax  = Float(0.8) // press slider ceiling, ball radii: the lowest surface stays ≥ 0.15
 
     /// weld on the phase-start position only: vertices that share a corner
     /// but morph to different targets still share one spring slot, so the
@@ -87,7 +109,7 @@ final class PlatoSprings {
         // icosahedron subdivided three times (642 vertices), an edge of
         // 1.0515/8 of the radius. a finer mesh takes less per vertex and a
         // coarser one more, else the harmonic sets how far the ball inflates
-        let meanEdge = edges.reduce(Float(0)) { $0 + simd_length(home[$1.1] - home[$1.0]) } / Float(max(1, edges.count))
+        meanEdge = edges.reduce(Float(0)) { $0 + simd_length(home[$1.1] - home[$1.0]) } / Float(max(1, edges.count))
         let refEdge = radius * 1.0515 / 8
         area = min(100, max(0.01, (meanEdge / refEdge) * (meanEdge / refEdge)))
         updateNormals()
@@ -116,8 +138,9 @@ final class PlatoSprings {
 
     /// queue a Shape::pick thrust at the point where the sight ray met the
     /// object (PlatoNode+Hit), applied on the render thread's next step.
-    /// 0.08 dents the round ball by a third to a half of its radius and
-    /// rings down; at 0.15 a fine mesh caves in to the centre
+    /// 0.08 dents the ball 0.13 of its radius on the 34-spring default
+    /// (phase 1, subdiv 0) up to 0.91 on phase 10 subdiv 3, and rings
+    /// down; at 0.15 a fine mesh caves in to the centre
     func impulse(at point: SIMD3<Float>, factr: Float = 0.08) {
         lock.lock(); pending.append((point, factr)); lock.unlock()
         active = true
@@ -137,8 +160,10 @@ final class PlatoSprings {
     }
 
     /// one integration step; home follows the morph at range01;
-    /// balloon 0…1 scales the outward pressure
-    func step(balloon: Float, range01: Float) {
+    /// balloon 0…1 scales the outward pressure; each held press sinks a tip
+    /// up to pressure × pressDepth ball radii
+    func step(balloon: Float, range01: Float,
+              presses: [SpringPress] = [], pressDepth: Float = 0) {
         applyImpulses()
         for i in home.indices {
             home[i] = lerp0[i] + (lerp1[i] - lerp0[i]) * range01
@@ -154,6 +179,7 @@ final class PlatoSprings {
             pristine = false
             for i in pos.indices { pos[i] = home[i] * inflate }
         }
+        let pressing = applyPresses(presses, pressDepth)
         var centroid = SIMD3<Float>.zero
         for p in pos { centroid += p }
         centroid /= Float(max(1, pos.count))
@@ -184,12 +210,89 @@ final class PlatoSprings {
         for i in pos.indices {
             if count[i] > 0 { vel[i] = vel[i] * 0.8 + avg[i] / Float(count[i]) * 0.2 }
             pos[i] += vel[i]
+            if pressing, indent[i] > 0 { contact(i) }
             vel[i] *= drag
             energy += simd_length_squared(vel[i]) + simd_length_squared(pos[i] - home[i] * inflate)
         }
         if !energy.isFinite { reset(); return }
         updateNormals()
         active = energy > 1e-7
+    }
+
+    /// ease each tip toward pressure × depth radii and sink every slot's
+    /// rest under it by exp(−q²), q = chord on the rest sphere / footprint;
+    /// touches take the deepest tip, never the sum. false leaves the step
+    /// as it was before presses, bit for bit
+    private func applyPresses(_ presses: [SpringPress], _ pressDepth: Float) -> Bool {
+        pushBack = 0
+        if !tipDepth.isEmpty {
+            let ids = Set(presses.map(\.id))
+            tipDepth = tipDepth.filter { ids.contains($0.key) }
+        }
+        guard !presses.isEmpty else { return false }
+        let R = restRadius
+        let depth = min(max(pressDepth, 0), Self.depthMax)
+        var tips = [(dir: SIMD3<Float>, sink: Float, foot: Float)]()
+        for p in presses {
+            let foot = min(max(p.foot, Self.footEdges * meanEdge * inflate), Self.footMax * R)
+            let target = min(min(max(p.pressure, 0), 1) * depth * R, Self.slopeMax * foot)
+            let was = tipDepth[p.id] ?? 0
+            let sink = was + (target - was) * Self.tipEase
+            tipDepth[p.id] = sink
+            if sink > 1e-6 * R { tips.append((p.dir, sink, foot)) }
+        }
+        guard !tips.isEmpty else { return false }
+        if indent.count != pos.count { indent = [Float](repeating: 0, count: pos.count) }
+        for i in pos.indices {
+            let rest = home[i] * inflate
+            let rr = simd_length(rest)
+            var sink = Float(0)
+            if rr > 1e-6 {
+                for t in tips {
+                    let q = simd_length(rest / rr - t.dir) * rr / t.foot
+                    if q < 3 { sink = max(sink, t.sink * exp(-q * q)) }
+                }
+            }
+            indent[i] = sink
+        }
+        return true
+    }
+
+    /// the tip is rigid: a slot outside it is set back onto it and loses
+    /// its outward speed; inward it moves freely
+    private func contact(_ i: Int) {
+        let rest = home[i] * inflate
+        let rr = simd_length(rest)
+        let rhat = rest / rr
+        let over = simd_dot(pos[i], rhat) - (rr - indent[i])
+        guard over > 0 else { return }
+        pos[i] -= rhat * over
+        pushBack += over
+        let out = simd_dot(vel[i], rhat)
+        if out > 0 { vel[i] -= rhat * out }
+    }
+
+    /// unit direction from the centre to where a sight ray first meets the
+    /// sphere of radius r; an eye inside takes the wall ahead. a miss within
+    /// reach of the sphere slides to the rim (the ray's closest approach);
+    /// a wider miss, or a sphere behind the eye, is nil
+    static func pressDirection(_ eye: SIMD3<Float>,
+                               _ dir: SIMD3<Float>,
+                               _ r: Float,
+                               reach: Float = 0) -> SIMD3<Float>? {
+        let b = simd_dot(eye, dir)
+        let disc = b * b - (simd_length_squared(eye) - r * r)
+        var t = -b // closest approach
+        if disc >= 0 {
+            let root = disc.squareRoot()
+            t = -b - root > 0 ? -b - root : -b + root
+        } else if simd_length(eye + dir * t) - r > reach {
+            return nil
+        }
+        guard t > 0 else { return nil }
+        let p = eye + dir * t
+        let l = simd_length(p)
+        return l > 1e-6 ? p / l : nil
     }
 
     /// the balloon swells the ball against its home pull and taut edges,
@@ -264,6 +367,8 @@ final class PlatoSprings {
         lock.lock(); pending.removeAll(); lock.unlock()
         for i in pos.indices { pos[i] = home[i] * inflate }
         for i in vel.indices { vel[i] = .zero }
+        tipDepth.removeAll()
+        pushBack = 0
         active = false
         energy = 0
         updateNormals()
