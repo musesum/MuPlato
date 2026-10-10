@@ -26,6 +26,9 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
     let pressLock = NSLock()
     var presses = [Int: SpringPress]()
     var ballRadius = Float(0) // rest radius as last stepped, for main-thread sight rays; under pressLock
+    /// how much impulse each held touch has dropped since it landed; the
+    /// touch (main) thread alone reads and writes it
+    var attacks = [Int: PressAttack]()
     
     public override init(_ pipeline : Pipeline,
                          _ pipeNode˚ : Flo) {
@@ -76,7 +79,8 @@ public class PlatoNode: RenderNode, @unchecked Sendable {
     func updatePlato() {
         
         platoMesh.updateMetal()
-        let held = pressLock.withLock { Array(presses.values) }
+        // the spring leaf's pressure button: off, a held touch leaves the ball be
+        let held = self.platoFlo.pressure ? pressLock.withLock { Array(presses.values) } : []
         platoMesh.updateSprings(presses: held, pressDepth: self.platoFlo.press)
         if let r = platoMesh.model.springs?.restRadius {
             pressLock.withLock { ballRadius = r }

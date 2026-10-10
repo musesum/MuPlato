@@ -62,7 +62,8 @@ extension PhaseTriangles {
     /// every range01 and the vertex part is shared by coincident corners.
     /// a sum that cancels to zero (back-to-back slivers where the tables
     /// fold) falls back to the radial direction, which every corner at that
-    /// position shares, so no seam opens there
+    /// position shares, so no seam opens there. a triangle with no area at
+    /// an end before the convex pull (a trisected sliver) adds nothing there
     func setNormals(_ blend: Float) {
         let blend = min(max(blend, 0), 1)
         guard blend > 0 else {
@@ -77,11 +78,14 @@ extension PhaseTriangles {
         var sum1 = [String: SIMD3<Float>]()
         for t in stride(from: 0, to: vertices.count - 2, by: 3) {
             let (a, b, c) = (vertices[t], vertices[t+1], vertices[t+2])
-            let n0 = outward(a.pos0.xyz, b.pos0.xyz, c.pos0.xyz)
-            let n1 = outward(a.pos1.xyz, b.pos1.xyz, c.pos1.xyz)
-            for v in [a, b, c] {
-                sum0[PlatoSprings.weldKey(v.pos0), default: .zero] += n0
-                sum1[PlatoSprings.weldKey(v.pos1), default: .zero] += n1
+            let tri = triRanges[t / 3]
+            if hasArea(tri.v0.p0, tri.v1.p0, tri.v2.p0) {
+                let n0 = outward(a.pos0.xyz, b.pos0.xyz, c.pos0.xyz)
+                for v in [a, b, c] { sum0[PlatoSprings.weldKey(v.pos0), default: .zero] += n0 }
+            }
+            if hasArea(tri.v0.p1, tri.v1.p1, tri.v2.p1) {
+                let n1 = outward(a.pos1.xyz, b.pos1.xyz, c.pos1.xyz)
+                for v in [a, b, c] { sum1[PlatoSprings.weldKey(v.pos1), default: .zero] += n1 }
             }
         }
         for i in vertices.indices {
@@ -91,6 +95,12 @@ extension PhaseTriangles {
             vertices[i].norm0 = pnt4f(vert0, blend)
             vertices[i].norm1 = pnt4f(vert1, blend)
         }
+    }
+    /// the corners span an area before the convex pull
+    func hasArea(_ v0: SIMD3<Float>,
+                 _ v1: SIMD3<Float>,
+                 _ v2: SIMD3<Float>) -> Bool {
+        simd_length(simd_cross(v1 - v0, v2 - v0)) > 1e-5
     }
     /// raw cross product (length = 2× area) turned away from the origin;
     /// the solids are star-shaped about it

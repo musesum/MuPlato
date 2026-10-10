@@ -31,31 +31,38 @@ extension PlatoNode { // + Hit
     }
 
     /// nearest point where the sight ray crosses a triangle of the mesh as
-    /// drawn this frame: pos0…pos1 at range01 plus the spring offset
-    func hitPoint(_ point: CGPoint) -> SIMD3<Float>? {
+    /// drawn this frame: pos0…pos1 at range01 plus the spring offset, or
+    /// without it, the solid at rest under a dent
+    func hitPoint(_ point: CGPoint, displaced: Bool = true) -> SIMD3<Float>? {
         guard let ray = sightRay(point) else { return nil }
         let model = platoMesh.model!
         let vertices = model.vertices!
         let range01 = model.counter.range01
-        let springs = platoMesh.springsWritten ? model.springs : nil
-        func at(_ i: Int) -> SIMD3<Float> {
+        let springs = displaced && platoMesh.springsWritten ? model.springs : nil
+        return Self.nearestHit(ray.eye, ray.dir, vertices.count) { i in
             let v = vertices[i]
             let p = v.pos0.xyz + (v.pos1.xyz - v.pos0.xyz) * range01
             return p + (springs?.offset(i) ?? .zero)
         }
+    }
+
+    /// nearest point where a ray crosses a triangle of `count` corners, three
+    /// per triangle, each corner where `at` puts it
+    static func nearestHit(_ eye: SIMD3<Float>, _ dir: SIMD3<Float>, _ count: Int,
+                           _ at: (Int) -> SIMD3<Float>) -> SIMD3<Float>? {
         var nearest = Float.greatestFiniteMagnitude
         var hit: SIMD3<Float>?
-        for t in stride(from: 0, to: vertices.count - 2, by: 3) {
-            if let s = rayTriangle(ray.eye, ray.dir, at(t), at(t+1), at(t+2)), s < nearest {
+        for t in stride(from: 0, to: count - 2, by: 3) {
+            if let s = rayTriangle(eye, dir, at(t), at(t+1), at(t+2)), s < nearest {
                 nearest = s
-                hit = ray.eye + ray.dir * s
+                hit = eye + dir * s
             }
         }
         return hit
     }
 
     /// Möller–Trumbore, both windings; distance along the ray or nil
-    private func rayTriangle(_ o: SIMD3<Float>, _ d: SIMD3<Float>,
+    private static func rayTriangle(_ o: SIMD3<Float>, _ d: SIMD3<Float>,
                              _ a: SIMD3<Float>, _ b: SIMD3<Float>, _ c: SIMD3<Float>) -> Float? {
         let e1 = b - a
         let e2 = c - a

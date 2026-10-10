@@ -82,9 +82,10 @@ extension PlatoSpringsTests { // + Press
         }
     }
 
-    /// a light fingertip tap at the default press rings the ball as the old
-    /// tap did: the impulse still does the work, the short press adds
-    /// nothing on a fine mesh and 5% on the 34-spring default ball
+    /// an impulse under a short light press rings the ball as the impulse
+    /// alone did: the press adds nothing on a fine mesh and 5% on the
+    /// 34-spring default ball (a light touch no longer drops the impulse:
+    /// PressAttack)
     func testLightTapIsTheOldTap() {
         for (phase, harmonic, most) in [(1, 2, Float(1.06)), (4, 2, 1.001), (10, 2, 1.001)] {
             var peaks = [Float]()
@@ -112,8 +113,12 @@ extension PlatoSpringsTests { // + Press
     /// pencil's narrowest tip, where the slope cap binds on phase 10 subdiv
     /// 3. a press slider past its ceiling reads as the ceiling
     func testPressNeverCavesIn() {
-        for (phase, harmonic, footR) in [(1, 2, PlatoSprings.footMax), (4, 2, PlatoSprings.footMax),
-                                         (10, 2, Float(0)), (10, 3, Float(0))] {
+        // the spring leaf's disk at either end: footWide on the coarse and
+        // middle balls, footLow's pinch on the default one
+        for (phase, harmonic, footR, spread) in [(1, 2, PlatoSprings.footMax, Float(1)), (4, 2, PlatoSprings.footMax, 1),
+                                                 (10, 2, Float(0), 1), (10, 3, Float(0), 1),
+                                                 (1, 2, PlatoSprings.footMax, 2.2), (4, 2, PlatoSprings.footMax, 2.2),
+                                                 (10, 2, PlatoSprings.footMax, 2.2), (1, 2, PlatoSprings.footMax, 0.2)] {
             for scene in ["one", "two", "drag"] {
                 let (vertices, springs) = warmBall(phase: phase, harmonic: harmonic)
                 let u = simd_normalize(vertices[0].pos0.xyz)
@@ -126,20 +131,20 @@ extension PlatoSpringsTests { // + Press
                         switch scene {
                         case "two":
                             let a = Float.pi / 3
-                            presses = [SpringPress(id: 1, dir: u, pressure: 1, foot: foot),
-                                       SpringPress(id: 2, dir: simd_normalize(u * cos(a) + side * sin(a)), pressure: 1, foot: foot)]
+                            presses = [SpringPress(id: 1, dir: u, pressure: 1, foot: foot, spread: spread),
+                                       SpringPress(id: 2, dir: simd_normalize(u * cos(a) + side * sin(a)), pressure: 1, foot: foot, spread: spread)]
                         case "drag":
                             let a = Float.pi / 2 * min(1, Float(frame) / 120)
-                            presses = [SpringPress(id: 1, dir: simd_normalize(u * cos(a) + side * sin(a)), pressure: 1, foot: foot)]
+                            presses = [SpringPress(id: 1, dir: simd_normalize(u * cos(a) + side * sin(a)), pressure: 1, foot: foot, spread: spread)]
                         default:
-                            presses = [SpringPress(id: 1, dir: u, pressure: 1, foot: foot)]
+                            presses = [SpringPress(id: 1, dir: u, pressure: 1, foot: foot, spread: spread)]
                         }
                     }
                     step(springs, presses, depth: PlatoSprings.depthMax)
                     XCTAssertTrue(springs.energy.isFinite, "\(scene) frame \(frame)")
                     low = min(low, dent(springs, vertices).low)
                 }
-                XCTAssertGreaterThanOrEqual(low, 0.12, "phase \(phase) foot \(footR) \(scene): the surface fell to \(low)")
+                XCTAssertGreaterThanOrEqual(low, 0.12, "phase \(phase) foot \(footR) spread \(spread) \(scene): the surface fell to \(low)")
             }
         }
         let vertices = makeBall(phase: 4, harmonic: 2).vertices!

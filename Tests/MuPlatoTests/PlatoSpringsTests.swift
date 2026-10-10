@@ -66,7 +66,7 @@ final class PlatoSpringsTests: XCTestCase {
     }
 
     /// the swollen ball rests on the built sphere whether touched or not
-    /// (plato.material w 'normal' 1 shows the vertex normals): once a touch
+    /// (plato.material normal 1 shows the vertex normals): once a touch
     /// rings down, every vertex sits at `inflate` times its built position
     /// and its normal is the built one, as a fresh build shows it. the
     /// untrimmed push rested these meshes 1…22% out of round

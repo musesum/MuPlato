@@ -141,6 +141,15 @@ public class PlatoModel: MeshModel<PlatoVertex> {
         }
         return changed 
     }
+    /// a platonic solid's springs, welded and sized where the clock left
+    /// the morph
+    @discardableResult
+    func solidSprings() -> PlatoSprings {
+        let springs = PlatoSprings(vertices, homePull: PlatoSprings.HomePull.solid,
+                                   solid: true, at: counter.range01)
+        self.springs = springs
+        return springs
+    }
     func buildPhase(keepSprings: Bool = false) {
         counter.newPhase = false
         phaseTriangles = platoPhases[counter.phase]
@@ -155,7 +164,7 @@ public class PlatoModel: MeshModel<PlatoVertex> {
         // fresh springs rest on the vertices just built: no offset or
         // velocity survives a rebuild, so an ico off → on cycle starts still
         if !keepSprings || springs?.slotOf.count != vertices.count {
-            springs = PlatoSprings(vertices)
+            springs = platoFlo.ico ? PlatoSprings(vertices) : solidSprings()
         }
         //counter.logCountNow()
     }

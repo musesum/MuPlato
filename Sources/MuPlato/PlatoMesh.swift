@@ -57,31 +57,51 @@ public class PlatoMesh: MeshMetal {
 
     var springsWritten = false // vertex buffer carries spring offsets
 
-    /// spring above zero: step the relaxation, held presses sunk up to
-    /// pressDepth ball radii, and write displaced positions and normals
-    /// into the vertex buffer; at zero no step runs (impulses dropped,
-    /// presses ignored) and the built vertices are restored once
+    /// the ico ball steps every frame; a platonic solid only while the
+    /// clock is off, and there only while pressed or ringing down, so at
+    /// rest it draws its built vertices
+    static func springsOn(balloon: Float, deforms: Bool, pressed: Bool, active: Bool) -> Bool {
+        balloon > 0 || (deforms && (pressed || active))
+    }
+
+    /// springs on: step the relaxation, held presses sunk up to pressDepth
+    /// ball radii, and write displaced positions into the vertex buffer,
+    /// with the ball's own normals; a platonic solid keeps its built normals
+    /// and the shader's face normals show the dent. Off: no step runs
+    /// (impulses dropped, presses ignored) and the built vertices are
+    /// restored once
     func updateSprings(presses: [SpringPress] = [], pressDepth: Float = 0) {
-        guard let springs = model.springs,
+        guard var springs = model.springs,
               let vb = mtkMesh?.vertexBuffers.first else { return }
         let balloon = model.platoFlo.spring
-        let on = balloon > 0
+        let on = Self.springsOn(balloon: balloon, deforms: model.platoFlo.deforms,
+                                pressed: !presses.isEmpty, active: springs.active)
         if !on && !springsWritten { return }
         let count = model.vertices.count
         // drawMesh binds this buffer at vb.offset, so the writes start there too
         let base = (vb.buffer.contents() + vb.offset).bindMemory(to: PlatoVertex.self, capacity: count)
         if on {
+            // the clock may have run since these springs were built: a solid
+            // starts again where it stopped
+            if springs.solid, springs.builtAt != model.counter.range01 {
+                let was = springs
+                springs = model.solidSprings()
+                springs.adopt(was)
+            }
             springs.step(balloon: balloon, range01: model.counter.range01,
                          presses: presses, pressDepth: pressDepth)
             let blend = min(max(model.platoFlo.normal, 0), 1)
+            let ball = balloon > 0
             for i in 0 ..< count {
                 let d = springs.offset(i)
-                let n = springs.vertexNormal(i)
                 var v = model.vertices[i]
                 v.pos0 += SIMD4<Float>(d.x, d.y, d.z, 0)
                 v.pos1 += SIMD4<Float>(d.x, d.y, d.z, 0)
-                v.norm0 = SIMD4<Float>(n.x, n.y, n.z, blend) // w: face → vertex
-                v.norm1 = v.norm0
+                if ball {
+                    let n = springs.vertexNormal(i)
+                    v.norm0 = SIMD4<Float>(n.x, n.y, n.z, blend) // w: face → vertex
+                    v.norm1 = v.norm0
+                }
                 base[i] = v
             }
             springsWritten = true
